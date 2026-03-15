@@ -8,18 +8,34 @@
 </head>
 <body>
   <header class="topbar">
-    <h1>Zivora Cloth Dealer Store</h1>
-    <p>Kids Wear • Women's Wear • Men's Wear • Jewellery</p>
+    <div>
+      <h1>Zivora Cloth Dealer Store</h1>
+      <p>Kids Wear • Women's Wear • Men's Wear • Jewellery</p>
+    </div>
+    <span class="chip">B2B Reseller Portal</span>
   </header>
 
   <main class="container">
+    <section id="adminAccessSection" class="panel hidden">
+      <h2>Admin Entry Gate</h2>
+      <p class="muted">Admin panel is hidden behind a private URL and passkey.</p>
+      <form id="adminGateForm" class="grid-form">
+        <label>
+          Admin panel passkey
+          <input type="password" id="adminGatePassword" required placeholder="Enter admin panel passkey" />
+        </label>
+        <button type="submit">Unlock Admin Login</button>
+      </form>
+      <p id="adminGateMessage" class="message"></p>
+    </section>
+
     <section id="loginSection" class="panel">
       <h2>Authorized Login</h2>
-      <p class="muted">No signup. Only admin-created users can log in.</p>
+      <p class="muted" id="loginHint">Only admin-created users can log in.</p>
       <form id="loginForm" class="grid-form">
         <label>
           User ID
-          <input type="text" id="userId" required placeholder="e.g. admin or reseller01" />
+          <input type="text" id="userId" required placeholder="e.g. reseller01" />
         </label>
         <label>
           Password
@@ -28,7 +44,8 @@
         <button type="submit">Login</button>
       </form>
       <div class="note">
-        <strong>Default admin credentials:</strong> admin / admin123
+        <strong>Default reseller:</strong> reseller01 / reseller123 <br />
+        <strong>Admin URL:</strong> add <code>?admin=1</code> in URL, then enter gate passkey.
       </div>
       <p id="loginMessage" class="message"></p>
     </section>
@@ -66,6 +83,7 @@
               </select>
               <input type="number" id="productPrice" min="1" placeholder="Coin price" required />
               <input type="text" id="productDetails" placeholder="Short details" required />
+              <input type="url" id="productImage" placeholder="Image URL (https://...)" required />
               <button type="submit">Add Product</button>
             </form>
           </article>
@@ -80,20 +98,25 @@
           </article>
 
           <article class="card">
-            <h3>Dealer Bank Ledger</h3>
-            <p>Total bank amount collected from reseller checkouts:</p>
-            <p class="big" id="bankBalance">₹0</p>
-            <small class="muted">This is tracked separately from reseller coin wallets.</small>
+            <h3>Security Controls</h3>
+            <form id="changeAdminPasswordForm" class="stack">
+              <input type="password" id="newAdminPassword" placeholder="New admin login password" required />
+              <button type="submit">Change Admin Login Password</button>
+            </form>
+            <form id="changeGatePasswordForm" class="stack top-space">
+              <input type="password" id="newGatePassword" placeholder="New admin panel gate passkey" required />
+              <button type="submit">Change Admin Gate Passkey</button>
+            </form>
           </article>
         </div>
 
         <div class="card">
-          <h3>Existing Users</h3>
+          <h3>Users (Username + Password)</h3>
           <div id="usersTableWrap"></div>
         </div>
       </section>
 
-      <section id="resellerPanel" class="hidden panel">
+      <section id="resellerPanel" class="hidden panel reseller-simple">
         <h2>Reseller Dashboard</h2>
 
         <div class="cards two-cols">
@@ -113,7 +136,7 @@
         </div>
 
         <h3>Product Catalog</h3>
-        <p class="muted">Separate columns for each category as requested.</p>
+        <p class="muted">Simple shopping layout inspired by modern reseller apps.</p>
         <div id="catalog" class="catalog-grid"></div>
 
         <div class="cards two-cols">
