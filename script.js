@@ -141,10 +141,10 @@ function isAdminRoute() {
 function updateLoginModeUI() {
   if (isAdminRoute()) {
     adminAccessSection.classList.remove("hidden");
-    loginHint.textContent = "Admin route detected. Unlock gate, then login with admin credentials.";
+    loginHint.textContent = "Enter your credentials to continue.";
   } else {
     adminAccessSection.classList.add("hidden");
-    loginHint.textContent = "Reseller login only on this route.";
+    loginHint.textContent = "Enter your credentials to continue.";
   }
 }
 
