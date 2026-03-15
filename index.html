@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zivora Cloth Dealer Portal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Zivora Cloth Dealer Store</h1>
+    <p>Kids Wear • Women's Wear • Men's Wear • Jewellery</p>
+  </header>
+
+  <main class="container">
+    <section id="loginSection" class="panel login-panel">
+      <div class="login-head">
+        <h2>Authorized Login</h2>
+        <span class="pill">No Public Signup</span>
+      </div>
+      <p class="muted">Only dealer-created users can log in.</p>
+
+      <div class="quick-links">
+        <a href="#admin" id="adminUrlBtn">Open Admin Login URL</a>
+        <button type="button" id="resetDataBtn" class="link-btn">Reset Demo Data</button>
+      </div>
+
+      <form id="loginForm" class="grid-form">
+        <label>
+          User ID
+          <input type="text" id="userId" required placeholder="e.g. admin or reseller01" />
+        </label>
+        <label>
+          Password
+          <input type="password" id="password" required placeholder="Enter password" />
+        </label>
+        <button type="submit">Login</button>
+      </form>
+
+      <div class="note">
+        <strong>Default admin credentials:</strong> admin / admin123<br />
+        <small>Admin URL: <code>index.html#admin</code> (auto-fills admin ID).</small>
+      </div>
+      <p id="loginMessage" class="message"></p>
+    </section>
+
+    <section id="appSection" class="hidden">
+      <nav class="app-nav panel slim-panel">
+        <span id="welcomeText"></span>
+        <div>
+          <button id="logoutBtn" class="secondary">Logout</button>
+        </div>
+      </nav>
+
+      <section id="adminPanel" class="hidden panel">
+        <h2>Admin Panel (Dealer Controls)</h2>
+        <div class="cards two-cols">
+          <article class="card">
+            <h3>Create Reseller User</h3>
+            <form id="createUserForm" class="stack">
+              <input type="text" id="newUserId" placeholder="User ID" required />
+              <input type="password" id="newUserPassword" placeholder="Password" required />
+              <button type="submit">Create User</button>
+            </form>
+          </article>
+
+          <article class="card">
+            <h3>Upload Product</h3>
+            <form id="productForm" class="stack">
+              <input type="text" id="productName" placeholder="Product name" required />
+              <select id="productCategory" required>
+                <option value="">Select category</option>
+                <option value="kids">Kids Wear</option>
+                <option value="women">Women's Wear</option>
+                <option value="men">Men's Wear</option>
+                <option value="jewellery">Jewellery</option>
+              </select>
+              <input type="number" id="productPrice" min="1" placeholder="Coin price" required />
+              <input type="text" id="productDetails" placeholder="Short details" required />
+              <button type="submit">Add Product</button>
+            </form>
+          </article>
+
+          <article class="card">
+            <h3>Load Coins to Reseller Wallet</h3>
+            <form id="walletForm" class="stack">
+              <select id="walletUser" required></select>
+              <input type="number" id="coinAmount" min="1" placeholder="Coins to add" required />
+              <button type="submit">Upload Coins</button>
+            </form>
+          </article>
+
+          <article class="card highlight-card">
+            <h3>Dealer Bank Ledger</h3>
+            <p>Total bank amount collected from reseller checkouts:</p>
+            <p class="big" id="bankBalance">₹0</p>
+            <small class="muted">Tracked separately from reseller coin wallets.</small>
+          </article>
+        </div>
+
+        <div class="card">
+          <h3>Existing Users</h3>
+          <div id="usersTableWrap"></div>
+        </div>
+      </section>
+
+      <section id="resellerPanel" class="hidden panel">
+        <h2>Reseller Dashboard</h2>
+
+        <div class="cards two-cols">
+          <article class="card highlight-card">
+            <h3>Wallet</h3>
+            <p>Available Coins:</p>
+            <p class="big" id="walletBalance">0 🪙</p>
+          </article>
+          <article class="card">
+            <h3>Cart</h3>
+            <p id="cartSummary">0 item(s) • 0 coins</p>
+            <div class="row">
+              <button id="checkoutBtn">Checkout (Pay with Coins)</button>
+              <button id="clearCartBtn" class="secondary">Clear Cart</button>
+            </div>
+          </article>
+        </div>
+
+        <h3>Product Catalog</h3>
+        <p class="muted">Separate columns for each category as requested.</p>
+        <div id="catalog" class="catalog-grid"></div>
+
+        <div class="cards two-cols">
+          <article class="card">
+            <h3>Purchase Records</h3>
+            <div id="purchaseRecords"></div>
+          </article>
+          <article class="card">
+            <h3>Track Orders & Location</h3>
+            <div id="trackingRecords"></div>
+          </article>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

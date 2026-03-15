@@ -1,0 +1,248 @@
+:root {
+  --bg: #f5f7ff;
+  --panel: #ffffff;
+  --text: #1f2937;
+  --muted: #667085;
+  --primary: #6d28d9;
+  --primary-dark: #581c87;
+  --border: #e4e7ec;
+  --success: #15803d;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Inter, Arial, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top right, #e9d5ff 0, transparent 26%),
+    radial-gradient(circle at top left, #dbeafe 0, transparent 24%),
+    var(--bg);
+}
+
+.topbar {
+  background: linear-gradient(120deg, #4f46e5, #9333ea);
+  color: white;
+  padding: 1.3rem;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(51, 65, 85, 0.25);
+}
+
+.topbar h1 {
+  margin: 0 0 0.3rem;
+  letter-spacing: 0.3px;
+}
+
+.topbar p {
+  margin: 0;
+  opacity: 0.95;
+}
+
+.container {
+  max-width: 1180px;
+  margin: 1.4rem auto;
+  padding: 0 1rem 2rem;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 7px 24px rgba(15, 23, 42, 0.08);
+}
+
+.slim-panel {
+  margin-bottom: 0.9rem;
+  padding: 0.8rem 1rem;
+}
+
+.login-panel {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.login-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.pill {
+  display: inline-flex;
+  border: 1px solid #c7d7fe;
+  background: #eef4ff;
+  color: #344054;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+}
+
+.quick-links {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.8rem;
+}
+
+.quick-links a,
+.link-btn {
+  color: #4338ca;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.link-btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.app-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hidden { display: none; }
+.message { min-height: 1.2rem; color: #b42318; font-weight: 600; }
+
+.note {
+  background: #f5f3ff;
+  color: #4c1d95;
+  border: 1px solid #ddd6fe;
+  padding: 0.65rem;
+  border-radius: 10px;
+  margin-top: 0.75rem;
+}
+
+code {
+  background: #ede9fe;
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+}
+
+.grid-form {
+  display: grid;
+  gap: 0.8rem;
+  max-width: 480px;
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.92rem;
+}
+
+input,
+select,
+button {
+  font: inherit;
+  padding: 0.58rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #d0d5dd;
+}
+
+input:focus,
+select:focus {
+  outline: 2px solid #ddd6fe;
+  border-color: #a78bfa;
+}
+
+button {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(109, 40, 217, 0.26);
+}
+
+button:hover { background: var(--primary-dark); }
+
+button.secondary {
+  background: #e4e7ec;
+  color: #344054;
+  box-shadow: none;
+}
+
+button.secondary:hover { background: #d0d5dd; }
+
+.cards {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.two-cols { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.8rem;
+  background: #fff;
+}
+
+.highlight-card {
+  border-color: #d6bbfb;
+  background: linear-gradient(180deg, #fcfaff 0%, #ffffff 70%);
+}
+
+.card h3 { margin-top: 0; }
+.stack { display: grid; gap: 0.65rem; }
+.row { display: flex; gap: 0.55rem; flex-wrap: wrap; }
+.big { font-size: 1.6rem; font-weight: 700; margin: 0.4rem 0; color: var(--success); }
+.muted { color: var(--muted); }
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+
+.category-column {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.category-column h4 {
+  margin: 0;
+  padding: 0.7rem;
+  background: #f5f3ff;
+  border-bottom: 1px solid var(--border);
+}
+
+.product-item {
+  padding: 0.7rem;
+  border-bottom: 1px solid #f2f4f7;
+}
+
+.product-item:last-child { border-bottom: 0; }
+.product-item strong { display: block; }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.record {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.55rem;
+  margin-bottom: 0.5rem;
+  background: #fcfcfd;
+}
