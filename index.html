@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zivora Dealer & Reseller Store</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <h1>Zivora</h1>
+      <p>Simple reseller shopping portal</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="loginSection" class="panel login-panel">
+      <h2>Login</h2>
+      <p class="muted">Only admin-created IDs can login. No signup.</p>
+      <p id="loginModeHint" class="note hidden"></p>
+      <div class="quick-links">
+        <a href="index.html?panel=admin">Open Admin Login URL</a>
+        <button type="button" id="resetDataBtn" class="link-btn">Reset Demo Data</button>
+      </div>
+      <form id="loginForm" class="grid-form">
+        <label>User ID<input id="userId" type="text" required /></label>
+        <label>Password<input id="password" type="password" required /></label>
+        <button type="submit">Login</button>
+      </form>
+      <p class="note">Default admin: <strong>admin / admin123</strong> (use <strong>index.html?panel=admin</strong>)</p>
+      <p id="loginMessage" class="message"></p>
+    </section>
+
+    <section id="appSection" class="hidden">
+      <nav class="app-nav panel">
+        <span id="welcomeText"></span>
+        <button id="logoutBtn" class="secondary">Logout</button>
+      </nav>
+
+      <section id="adminPanel" class="hidden panel">
+        <h2>Admin Panel</h2>
+        <div class="cards three-cols">
+          <article class="card">
+            <h3>Create Reseller</h3>
+            <form id="createUserForm" class="stack">
+              <input id="newUserId" placeholder="Reseller username" required />
+              <input id="newUserPassword" placeholder="Reseller password" type="text" required />
+              <button type="submit">Create User</button>
+            </form>
+          </article>
+
+          <article class="card">
+            <h3>Change Admin Password</h3>
+            <form id="changeAdminPasswordForm" class="stack">
+              <input id="currentAdminPassword" type="password" placeholder="Current admin password" required />
+              <input id="newAdminPassword" type="text" placeholder="New admin password" required />
+              <button type="submit">Update Password</button>
+            </form>
+          </article>
+
+          <article class="card">
+            <h3>Load Coins</h3>
+            <form id="walletForm" class="stack">
+              <select id="walletUser" required></select>
+              <input id="coinAmount" type="number" min="1" placeholder="Coins to add" required />
+              <button type="submit">Upload Coins</button>
+            </form>
+          </article>
+        </div>
+
+        <article class="card full-row">
+          <h3>Upload Product (Image + Full Details)</h3>
+          <form id="productForm" class="product-form-grid">
+            <input id="productName" placeholder="Product name" required />
+            <select id="productCategory" required>
+              <option value="">Select category</option>
+              <option value="kids">Kids Wear</option>
+              <option value="women">Women's Wear</option>
+              <option value="men">Men's Wear</option>
+              <option value="jewellery">Jewellery</option>
+            </select>
+            <input id="productPrice" type="number" min="1" placeholder="Coin price" required />
+            <input id="productBrand" placeholder="Brand" required />
+            <input id="productSize" placeholder="Size (S/M/L/Free)" required />
+            <input id="productMaterial" placeholder="Material" required />
+            <input id="productStock" type="number" min="0" placeholder="Stock" required />
+            <input id="productImage" placeholder="Image URL (https://...)" required />
+            <input id="productDetails" class="span-all" placeholder="Product details" required />
+            <button type="submit" class="span-all">Add Product</button>
+          </form>
+        </article>
+
+        <div class="cards two-cols">
+          <article class="card">
+            <h3>Resellers (username + password)</h3>
+            <div id="usersTableWrap"></div>
+          </article>
+          <article class="card">
+            <h3>Products</h3>
+            <div id="productsTableWrap"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="resellerPanel" class="hidden reseller-shell">
+        <section class="shop-toolbar panel">
+          <div class="toolbar-top">
+            <h2>Shop Products</h2>
+            <button id="openCartBtn">Cart <span id="cartCountBadge">0</span></button>
+          </div>
+          <div class="toolbar-filters">
+            <input id="searchInput" type="text" placeholder="Search by product, brand, material..." />
+            <div id="categoryFilters" class="chip-row"></div>
+          </div>
+        </section>
+
+        <section>
+          <div id="catalogCards" class="product-grid"></div>
+        </section>
+
+        <section class="cards two-cols">
+          <article class="card highlight-card">
+            <h3>Wallet Balance</h3>
+            <p class="big" id="walletBalance">0 🪙</p>
+          </article>
+          <article class="card">
+            <h3>Orders / Tracking</h3>
+            <div id="trackingRecords"></div>
+          </article>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <aside id="cartDrawer" class="cart-drawer hidden">
+    <div class="cart-head">
+      <h3>Your Cart</h3>
+      <button id="closeCartBtn" class="secondary">Close</button>
+    </div>
+    <div id="cartItems"></div>
+    <p id="cartSummary" class="muted">0 item(s) • 0 coins</p>
+    <div class="row">
+      <button id="checkoutBtn">Checkout</button>
+      <button id="clearCartBtn" class="secondary">Clear</button>
+    </div>
+  </aside>
+
+  <script src="script.js"></script>
+</body>
+</html>
