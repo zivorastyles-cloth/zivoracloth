@@ -1,25 +1,42 @@
-# Zivora Cloth Reseller Store
+# Zivora Cloth Reseller Store (HTML/CSS/JavaScript)
 
-A reseller-only ecommerce app for kids wear, womens wear, mens wear, and jewellary with:
+This is a reseller-only ecommerce website built with **HTML, CSS, and JavaScript only**.
 
-- Admin-managed login IDs (no signup)
-- Wallet coins system for resellers
-- Cart + checkout flow
-- Separate bank ledger tracking from wallet balance
-- Purchase history + tracking location
-- Admin panel for user/product/order management
+## Features
 
-## Run locally
+- No signup flow. Login only with admin-created IDs.
+- Category columns: **Kids Wear**, **Womens Wear**, **Mens Wear**, **Jewellary**.
+- Admin panel to:
+  - create reseller logins
+  - upload coins to reseller wallet
+  - upload products
+  - update order status + tracking location
+- Reseller panel to:
+  - browse products by category
+  - add products to cart
+  - checkout with wallet coins
+  - view purchase history and tracking
+- Bank ledger is tracked separately from reseller wallets.
+
+## Run
+
+Because this is static HTML/CSS/JS, you can open it directly or serve it with any static server.
+
+### Option 1: open file directly
+
+Open `index.html` in your browser.
+
+### Option 2: serve locally
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python app.py
+npx serve .
 ```
 
-Open: `http://localhost:5000`
+Then open the shown URL.
 
-Default admin login:
+## Default admin login
+
 - username: `admin`
 - password: `admin123`
+
+> Data is stored in browser `localStorage`.
