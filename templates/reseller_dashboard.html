@@ -6,12 +6,26 @@
   <p><a href="{{ url_for('view_cart') }}">Open Cart ({{ cart_count }} items)</a></p>
 </div>
 
-<div class="grid two">
+<section class="card">
+  <h3>Product Catalog</h3>
+  <p>Categories: Kids Wear, Womens Wear, Mens Wear, Jewellary.</p>
+  <div class="filters">
+    <button type="button" class="pill active" data-filter-category="all">All</button>
+    {% for category in products_by_category.keys() %}
+      <button type="button" class="pill" data-filter-category="{{ category }}">{{ category.title() }}</button>
+    {% endfor %}
+  </div>
+  <label>Search products
+    <input id="product-search" type="text" placeholder="Search: night suit, coat set, t-shirts...">
+  </label>
+</section>
+
+<div class="grid four">
   {% for category, products in products_by_category.items() %}
     <section class="card">
       <h3>{{ category.title() }}</h3>
       {% for p in products %}
-      <div class="product">
+      <div class="product" data-product-card data-category="{{ category }}" data-name="{{ p.name }}">
         <strong>{{ p.name }}</strong>
         <p>{{ p.description }}</p>
         <p>{{ p.price_coins }} coins | Stock {{ p.stock }}</p>

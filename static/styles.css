@@ -7,8 +7,9 @@ main { padding: 20px; }
 .narrow { max-width: 420px; margin: 30px auto; }
 label { display: block; margin: 8px 0; }
 input, select, textarea, button { width: 100%; padding: 8px; margin-top: 4px; }
-button { background: #2f3e5c; color: #fff; border: none; cursor: pointer; }
+button { background: #2f3e5c; color: #fff; border: none; cursor: pointer; border-radius: 6px; }
 .grid.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.grid.four { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
 .inline { display: grid; grid-template-columns: 2fr 1fr 1fr 120px; gap: 8px; align-items: center; margin-bottom: 8px; }
 .flash-list { list-style: none; padding: 0; }
 .flash { padding: 10px; margin: 6px 0; border-radius: 6px; }
@@ -16,3 +17,10 @@ button { background: #2f3e5c; color: #fff; border: none; cursor: pointer; }
 .flash.error { background: #ffd8d8; }
 .product { border-top: 1px solid #ddd; margin-top: 8px; padding-top: 8px; }
 .hint { color: #666; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.pill { width: auto; padding: 8px 12px; background: #dce3f7; color: #1f2d4e; }
+.pill.active { background: #2f3e5c; color: #fff; }
+.cart-list { list-style: none; padding: 0; }
+.cart-list li { border-bottom: 1px solid #ececec; padding: 12px 0; }
+.cart-actions { display: grid; grid-template-columns: 100px 1fr 1fr; gap: 8px; margin-top: 8px; }
+.danger { background: #973131; }
