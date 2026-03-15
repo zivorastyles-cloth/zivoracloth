@@ -1,4 +1,5 @@
-const STORAGE_KEY = "zivora_store_data_v1";
+const STORAGE_KEY = "zivora_store_data_v2";
+const ADMIN_PANEL_QUERY = "admin";
 const CATEGORY_LABELS = {
   kids: "Kids Wear",
   women: "Women's Wear",
@@ -6,34 +7,86 @@ const CATEGORY_LABELS = {
   jewellery: "Jewellery",
 };
 
+const fallbackImage =
+  "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=60";
+
 const defaultData = {
+  settings: {
+    adminGatePasskey: "zivora-admin-gate",
+  },
   users: [
     { id: "admin", password: "admin123", role: "admin", wallet: 0 },
     { id: "reseller01", password: "reseller123", role: "reseller", wallet: 2500 },
   ],
   products: [
-    { id: 1, name: "Kids Cartoon T-Shirt", category: "kids", price: 250, details: "Soft cotton for daily wear" },
-    { id: 2, name: "Women Night Suit Set", category: "women", price: 650, details: "Satin finish 2-piece" },
-    { id: 3, name: "Men Cotton T-Shirt", category: "men", price: 390, details: "Breathable and regular fit" },
-    { id: 4, name: "Artificial Stone Necklace", category: "jewellery", price: 470, details: "Lightweight festive design" },
-    { id: 5, name: "Women Coat Set", category: "women", price: 1200, details: "Premium winter combo" },
+    {
+      id: 1,
+      name: "Kids Cartoon T-Shirt",
+      category: "kids",
+      price: 250,
+      details: "Soft cotton for daily wear",
+      image:
+        "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&w=800&q=60",
+    },
+    {
+      id: 2,
+      name: "Women Night Suit Set",
+      category: "women",
+      price: 650,
+      details: "Satin finish 2-piece",
+      image:
+        "https://images.unsplash.com/photo-1485462537746-965f33f7f6a7?auto=format&fit=crop&w=800&q=60",
+    },
+    {
+      id: 3,
+      name: "Men Cotton T-Shirt",
+      category: "men",
+      price: 390,
+      details: "Breathable and regular fit",
+      image:
+        "https://images.unsplash.com/photo-1527719327859-c6ce80353573?auto=format&fit=crop&w=800&q=60",
+    },
+    {
+      id: 4,
+      name: "Artificial Stone Necklace",
+      category: "jewellery",
+      price: 470,
+      details: "Lightweight festive design",
+      image:
+        "https://images.unsplash.com/photo-1617038260897-41a1f14a8ca0?auto=format&fit=crop&w=800&q=60",
+    },
+    {
+      id: 5,
+      name: "Women Coat Set",
+      category: "women",
+      price: 1200,
+      details: "Premium winter combo",
+      image:
+        "https://images.unsplash.com/photo-1554412933-514a83d2f3c8?auto=format&fit=crop&w=800&q=60",
+    },
   ],
   carts: {},
   purchases: {},
   tracking: {},
-  bankBalance: 0,
   nextProductId: 6,
 };
 
 let store = loadData();
 let currentUser = null;
+let adminGateUnlocked = false;
 
 const loginSection = document.getElementById("loginSection");
+const adminAccessSection = document.getElementById("adminAccessSection");
 const appSection = document.getElementById("appSection");
 const adminPanel = document.getElementById("adminPanel");
 const resellerPanel = document.getElementById("resellerPanel");
 const welcomeText = document.getElementById("welcomeText");
 const loginMessage = document.getElementById("loginMessage");
+const adminGateMessage = document.getElementById("adminGateMessage");
+const loginHint = document.getElementById("loginHint");
+const adminGateHintText = document.getElementById("adminGateHintText");
+const gatePasskeyPreview = document.getElementById("gatePasskeyPreview");
+let gatePasskeyVisible = false;
 
 function loadData() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -42,11 +95,37 @@ function loadData() {
     return structuredClone(defaultData);
   }
   try {
-    return JSON.parse(raw);
+    const data = JSON.parse(raw);
+    return migrateData(data);
   } catch {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData));
     return structuredClone(defaultData);
   }
+}
+
+function migrateData(data) {
+  const migrated = structuredClone(data);
+
+  if (!migrated.settings) migrated.settings = {};
+  if (!migrated.settings.adminGatePasskey) {
+    migrated.settings.adminGatePasskey = defaultData.settings.adminGatePasskey;
+  }
+
+  if (!Array.isArray(migrated.products)) migrated.products = [];
+  migrated.products = migrated.products.map((product) => ({
+    ...product,
+    image: product.image || fallbackImage,
+  }));
+
+  if (!migrated.nextProductId) {
+    migrated.nextProductId = migrated.products.reduce((max, p) => Math.max(max, p.id || 0), 0) + 1;
+  }
+
+  if (!migrated.carts) migrated.carts = {};
+  if (!migrated.purchases) migrated.purchases = {};
+  if (!migrated.tracking) migrated.tracking = {};
+
+  return migrated;
 }
 
 function saveData() {
@@ -55,6 +134,50 @@ function saveData() {
 
 function getUserById(userId) {
   return store.users.find((u) => u.id === userId);
+}
+
+function isAdminRoute() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(ADMIN_PANEL_QUERY) === "1";
+}
+
+function updateLoginModeUI() {
+  adminGateHintText.textContent = store.settings.adminGatePasskey;
+  if (isAdminRoute()) {
+    adminAccessSection.classList.remove("hidden");
+    loginHint.textContent = "Admin route detected. Unlock gate, then login with admin credentials.";
+  } else {
+    adminAccessSection.classList.add("hidden");
+    loginHint.textContent = "Reseller login only on this route.";
+  }
+}
+
+function getMaskedPasskey(passkey) {
+  if (!passkey) return "";
+  return "•".repeat(Math.max(passkey.length, 8));
+}
+
+function renderGatePasskeyPreview() {
+  gatePasskeyPreview.textContent = gatePasskeyVisible
+    ? store.settings.adminGatePasskey
+    : getMaskedPasskey(store.settings.adminGatePasskey);
+}
+
+function toggleGatePasskeyPreview() {
+  gatePasskeyVisible = !gatePasskeyVisible;
+  renderGatePasskeyPreview();
+}
+
+function unlockAdminGate(event) {
+  event.preventDefault();
+  const pass = document.getElementById("adminGatePassword").value;
+  if (pass !== store.settings.adminGatePasskey) {
+    adminGateMessage.textContent = "Invalid gate passkey.";
+    return;
+  }
+  adminGateUnlocked = true;
+  adminGateMessage.textContent = "Admin gate unlocked. You can now login as admin.";
+  event.target.reset();
 }
 
 function login(event) {
@@ -68,9 +191,26 @@ function login(event) {
     return;
   }
 
+  if (user.role === "admin") {
+    if (!isAdminRoute()) {
+      loginMessage.textContent = "Admin login is only allowed on the private admin URL (?admin=1).";
+      return;
+    }
+    if (!adminGateUnlocked) {
+      loginMessage.textContent = "Unlock admin gate first using passkey.";
+      return;
+    }
+  }
+
+  if (user.role === "reseller" && isAdminRoute()) {
+    loginMessage.textContent = "Reseller login is blocked on admin URL. Use normal URL.";
+    return;
+  }
+
   currentUser = user;
   loginMessage.textContent = "";
   loginSection.classList.add("hidden");
+  adminAccessSection.classList.add("hidden");
   appSection.classList.remove("hidden");
   welcomeText.textContent = `Logged in as ${user.id} (${user.role})`;
   renderRolePanel();
@@ -78,11 +218,13 @@ function login(event) {
 
 function logout() {
   currentUser = null;
+  adminGateUnlocked = false;
   document.getElementById("loginForm").reset();
   appSection.classList.add("hidden");
   adminPanel.classList.add("hidden");
   resellerPanel.classList.add("hidden");
   loginSection.classList.remove("hidden");
+  updateLoginModeUI();
 }
 
 function renderRolePanel() {
@@ -99,6 +241,7 @@ function renderRolePanel() {
 }
 
 function renderAdminData() {
+  renderGatePasskeyPreview();
   const resellerUsers = store.users.filter((u) => u.role === "reseller");
   const walletUser = document.getElementById("walletUser");
   walletUser.innerHTML = '<option value="">Select reseller</option>';
@@ -109,24 +252,35 @@ function renderAdminData() {
     walletUser.appendChild(option);
   });
 
-  document.getElementById("bankBalance").textContent = `₹${store.bankBalance.toLocaleString("en-IN")}`;
-
   const rows = store.users
     .map(
       (u) => `<tr>
         <td>${u.id}</td>
+        <td>${u.password}</td>
         <td>${u.role}</td>
         <td>${u.wallet} coins</td>
+        <td>${
+          u.role === "reseller"
+            ? `<button class="danger small" data-delete-user="${u.id}">Delete</button>`
+            : "-"
+        }</td>
       </tr>`
     )
     .join("");
 
   document.getElementById("usersTableWrap").innerHTML = `
     <table class="table">
-      <thead><tr><th>User ID</th><th>Role</th><th>Wallet</th></tr></thead>
+      <thead><tr><th>User ID</th><th>Password</th><th>Role</th><th>Wallet</th><th>Action</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   `;
+
+  document.querySelectorAll("[data-delete-user]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const userId = button.getAttribute("data-delete-user");
+      deleteResellerUser(userId);
+    });
+  });
 }
 
 function renderResellerData() {
@@ -161,6 +315,7 @@ function renderCatalog() {
       const item = document.createElement("div");
       item.className = "product-item";
       item.innerHTML = `
+        <img src="${p.image}" alt="${p.name}" loading="lazy" />
         <strong>${p.name}</strong>
         <small>${p.details}</small>
         <p>${p.price} coins</p>
@@ -216,7 +371,6 @@ function checkout() {
   }
 
   user.wallet -= total;
-  store.bankBalance += total;
   store.carts[currentUser.id] = [];
 
   if (!store.purchases[currentUser.id]) store.purchases[currentUser.id] = [];
@@ -258,7 +412,13 @@ function renderPurchaseRecords() {
     .map(
       (r) => `<div class="record">
         <strong>${r.orderId}</strong>
-        <div>${r.items.map((it) => it.name).join(", ")}</div>
+        ${r.items
+          .map(
+            (it) => `<div class="purchase-item"><img src="${it.image || fallbackImage}" alt="${it.name}" /> <span>${
+              it.name
+            }</span></div>`
+          )
+          .join("")}
         <small>${r.purchasedAt}</small>
         <div>Total: ${r.total} coins</div>
       </div>`
@@ -306,14 +466,28 @@ function createUser(event) {
   alert("Reseller user created.");
 }
 
+function deleteResellerUser(userId) {
+  if (!userId) return;
+  const confirmDelete = window.confirm(`Delete reseller ${userId}? This cannot be undone.`);
+  if (!confirmDelete) return;
+
+  store.users = store.users.filter((user) => !(user.id === userId && user.role === "reseller"));
+  delete store.carts[userId];
+  delete store.purchases[userId];
+  delete store.tracking[userId];
+  saveData();
+  renderAdminData();
+}
+
 function addProduct(event) {
   event.preventDefault();
   const name = document.getElementById("productName").value.trim();
   const category = document.getElementById("productCategory").value;
   const price = Number(document.getElementById("productPrice").value);
   const details = document.getElementById("productDetails").value.trim();
+  const image = document.getElementById("productImage").value.trim();
 
-  if (!name || !category || !price || !details) return;
+  if (!name || !category || !price || !details || !image) return;
 
   store.products.push({
     id: store.nextProductId++,
@@ -321,6 +495,7 @@ function addProduct(event) {
     category,
     price,
     details,
+    image,
   });
 
   saveData();
@@ -344,7 +519,40 @@ function addCoins(event) {
   alert(`${amount} coins added to ${user.id}.`);
 }
 
+function changeAdminPassword(event) {
+  event.preventDefault();
+  const newPass = document.getElementById("newAdminPassword").value;
+  if (!newPass || newPass.length < 4) {
+    alert("Admin password must be at least 4 characters.");
+    return;
+  }
+
+  const admin = getUserById("admin");
+  admin.password = newPass;
+  saveData();
+  event.target.reset();
+  renderAdminData();
+  alert("Admin login password updated.");
+}
+
+function changeGatePasskey(event) {
+  event.preventDefault();
+  const newPasskey = document.getElementById("newGatePassword").value;
+  if (!newPasskey || newPasskey.length < 4) {
+    alert("Gate passkey must be at least 4 characters.");
+    return;
+  }
+
+  store.settings.adminGatePasskey = newPasskey;
+  saveData();
+  event.target.reset();
+  updateLoginModeUI();
+  renderGatePasskeyPreview();
+  alert("Admin gate passkey updated.");
+}
+
 function bindEvents() {
+  document.getElementById("adminGateForm").addEventListener("submit", unlockAdminGate);
   document.getElementById("loginForm").addEventListener("submit", login);
   document.getElementById("logoutBtn").addEventListener("click", logout);
   document.getElementById("createUserForm").addEventListener("submit", createUser);
@@ -352,6 +560,11 @@ function bindEvents() {
   document.getElementById("walletForm").addEventListener("submit", addCoins);
   document.getElementById("checkoutBtn").addEventListener("click", checkout);
   document.getElementById("clearCartBtn").addEventListener("click", clearCart);
+  document.getElementById("changeAdminPasswordForm").addEventListener("submit", changeAdminPassword);
+  document.getElementById("changeGatePasswordForm").addEventListener("submit", changeGatePasskey);
+  document.getElementById("toggleGatePreview").addEventListener("click", toggleGatePasskeyPreview);
 }
 
 bindEvents();
+updateLoginModeUI();
+saveData();
