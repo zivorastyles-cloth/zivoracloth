@@ -1,0 +1,18 @@
+:root { font-family: Arial, sans-serif; }
+body { margin: 0; background: #f4f4f8; }
+nav { background: #2f3e5c; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+nav a { color: #fff; }
+main { padding: 20px; }
+.card { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,.1); }
+.narrow { max-width: 420px; margin: 30px auto; }
+label { display: block; margin: 8px 0; }
+input, select, textarea, button { width: 100%; padding: 8px; margin-top: 4px; }
+button { background: #2f3e5c; color: #fff; border: none; cursor: pointer; }
+.grid.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.inline { display: grid; grid-template-columns: 2fr 1fr 1fr 120px; gap: 8px; align-items: center; margin-bottom: 8px; }
+.flash-list { list-style: none; padding: 0; }
+.flash { padding: 10px; margin: 6px 0; border-radius: 6px; }
+.flash.success { background: #d8f5dd; }
+.flash.error { background: #ffd8d8; }
+.product { border-top: 1px solid #ddd; margin-top: 8px; padding-top: 8px; }
+.hint { color: #666; }
