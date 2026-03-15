@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zivora Dealer & Reseller Store</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <h1>Zivora</h1>
+      <p>Dealer + Reseller Commerce Portal</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="loginSection" class="panel login-panel">
+      <h2>Login</h2>
+      <p class="muted">No signup. Access only by dealer-created ID/password.</p>
+      <div class="quick-links">
+        <a href="#admin">Admin URL</a>
+        <button type="button" id="resetDataBtn" class="link-btn">Reset Demo Data</button>
+      </div>
+      <form id="loginForm" class="grid-form">
+        <label>User ID<input id="userId" type="text" required /></label>
+        <label>Password<input id="password" type="password" required /></label>
+        <button type="submit">Login</button>
+      </form>
+      <p class="note">Default admin: <strong>admin / admin123</strong></p>
+      <p id="loginMessage" class="message"></p>
+    </section>
+
+    <section id="appSection" class="hidden">
+      <nav class="app-nav panel">
+        <span id="welcomeText"></span>
+        <button id="logoutBtn" class="secondary">Logout</button>
+      </nav>
+
+      <section id="adminPanel" class="hidden panel">
+        <h2>Admin Panel</h2>
+        <div class="cards two-cols">
+          <article class="card">
+            <h3>Create Reseller</h3>
+            <form id="createUserForm" class="stack">
+              <input id="newUserId" placeholder="User ID" required />
+              <input id="newUserPassword" placeholder="Password" type="password" required />
+              <button type="submit">Create User</button>
+            </form>
+          </article>
+
+          <article class="card">
+            <h3>Upload Product</h3>
+            <form id="productForm" class="stack">
+              <input id="productName" placeholder="Product name" required />
+              <select id="productCategory" required>
+                <option value="">Select category</option>
+                <option value="kids">Kids Wear</option>
+                <option value="women">Women's Wear</option>
+                <option value="men">Men's Wear</option>
+                <option value="jewellery">Jewellery</option>
+              </select>
+              <input id="productPrice" type="number" min="1" placeholder="Coin price" required />
+              <input id="productDetails" placeholder="Short details" required />
+              <input id="productImage" placeholder="Image URL (https://...)" required />
+              <button type="submit">Add Product</button>
+            </form>
+          </article>
+
+          <article class="card">
+            <h3>Load Coins</h3>
+            <form id="walletForm" class="stack">
+              <select id="walletUser" required></select>
+              <input id="coinAmount" type="number" min="1" placeholder="Coins" required />
+              <button type="submit">Upload Coins</button>
+            </form>
+          </article>
+
+          <article class="card highlight-card">
+            <h3>Bank Ledger</h3>
+            <p class="big" id="bankBalance">₹0</p>
+            <small class="muted">Dealer bank amount (separate from wallet coins).</small>
+          </article>
+        </div>
+
+        <div class="cards two-cols">
+          <article class="card">
+            <h3>Users</h3>
+            <div id="usersTableWrap"></div>
+          </article>
+          <article class="card">
+            <h3>Products</h3>
+            <div id="productsTableWrap"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="resellerPanel" class="hidden reseller-shell">
+        <section class="shop-toolbar panel">
+          <div class="toolbar-top">
+            <h2>Shop Products</h2>
+            <button id="openCartBtn">Cart <span id="cartCountBadge">0</span></button>
+          </div>
+          <div class="toolbar-filters">
+            <input id="searchInput" type="text" placeholder="Search products..." />
+            <div id="categoryFilters" class="chip-row"></div>
+          </div>
+        </section>
+
+        <section>
+          <div id="catalogCards" class="product-grid"></div>
+        </section>
+
+        <section class="cards two-cols">
+          <article class="card highlight-card">
+            <h3>Wallet Balance</h3>
+            <p class="big" id="walletBalance">0 🪙</p>
+          </article>
+          <article class="card">
+            <h3>Orders / Tracking</h3>
+            <div id="trackingRecords"></div>
+          </article>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <aside id="cartDrawer" class="cart-drawer hidden">
+    <div class="cart-head">
+      <h3>Your Cart</h3>
+      <button id="closeCartBtn" class="secondary">Close</button>
+    </div>
+    <div id="cartItems"></div>
+    <p id="cartSummary" class="muted">0 item(s) • 0 coins</p>
+    <div class="row">
+      <button id="checkoutBtn">Checkout</button>
+      <button id="clearCartBtn" class="secondary">Clear</button>
+    </div>
+  </aside>
+
+  <script src="script.js"></script>
+</body>
+</html>
