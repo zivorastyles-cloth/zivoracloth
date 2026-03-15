@@ -13,18 +13,9 @@
   </header>
 
   <main class="container">
-    <section id="loginSection" class="panel login-panel">
-      <div class="login-head">
-        <h2>Authorized Login</h2>
-        <span class="pill">No Public Signup</span>
-      </div>
-      <p class="muted">Only dealer-created users can log in.</p>
-
-      <div class="quick-links">
-        <a href="#admin" id="adminUrlBtn">Open Admin Login URL</a>
-        <button type="button" id="resetDataBtn" class="link-btn">Reset Demo Data</button>
-      </div>
-
+    <section id="loginSection" class="panel">
+      <h2>Authorized Login</h2>
+      <p class="muted">No signup. Only admin-created users can log in.</p>
       <form id="loginForm" class="grid-form">
         <label>
           User ID
@@ -36,16 +27,14 @@
         </label>
         <button type="submit">Login</button>
       </form>
-
       <div class="note">
-        <strong>Default admin credentials:</strong> admin / admin123<br />
-        <small>Admin URL: <code>index.html#admin</code> (auto-fills admin ID).</small>
+        <strong>Default admin credentials:</strong> admin / admin123
       </div>
       <p id="loginMessage" class="message"></p>
     </section>
 
     <section id="appSection" class="hidden">
-      <nav class="app-nav panel slim-panel">
+      <nav class="app-nav">
         <span id="welcomeText"></span>
         <div>
           <button id="logoutBtn" class="secondary">Logout</button>
@@ -90,11 +79,11 @@
             </form>
           </article>
 
-          <article class="card highlight-card">
+          <article class="card">
             <h3>Dealer Bank Ledger</h3>
             <p>Total bank amount collected from reseller checkouts:</p>
             <p class="big" id="bankBalance">₹0</p>
-            <small class="muted">Tracked separately from reseller coin wallets.</small>
+            <small class="muted">This is tracked separately from reseller coin wallets.</small>
           </article>
         </div>
 
@@ -108,7 +97,7 @@
         <h2>Reseller Dashboard</h2>
 
         <div class="cards two-cols">
-          <article class="card highlight-card">
+          <article class="card">
             <h3>Wallet</h3>
             <p>Available Coins:</p>
             <p class="big" id="walletBalance">0 🪙</p>
