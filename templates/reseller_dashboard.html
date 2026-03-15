@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Reseller Dashboard</h2>
+<div class="card">
+  <p>Wallet Coins: <strong>{{ wallet_coins }}</strong></p>
+  <p><a href="{{ url_for('view_cart') }}">Open Cart ({{ cart_count }} items)</a></p>
+</div>
+
+<div class="grid two">
+  {% for category, products in products_by_category.items() %}
+    <section class="card">
+      <h3>{{ category.title() }}</h3>
+      {% for p in products %}
+      <div class="product">
+        <strong>{{ p.name }}</strong>
+        <p>{{ p.description }}</p>
+        <p>{{ p.price_coins }} coins | Stock {{ p.stock }}</p>
+        <form method="post" action="{{ url_for('add_to_cart', product_id=p.id) }}">
+          <input type="number" name="qty" min="1" value="1">
+          <button type="submit">Add to Cart</button>
+        </form>
+      </div>
+      {% else %}
+      <p>No products in this category.</p>
+      {% endfor %}
+    </section>
+  {% endfor %}
+</div>
+
+<section class="card">
+  <h3>Your Purchases & Tracking</h3>
+  <ul>
+    {% for order in orders %}
+    <li>
+      Order #{{ order.id }} | {{ order.total_coins }} coins | Status: {{ order.status }} | Location: {{ order.tracking_location }}
+    </li>
+    {% else %}
+    <li>No purchases yet.</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}
