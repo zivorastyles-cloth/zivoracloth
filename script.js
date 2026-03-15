@@ -74,6 +74,7 @@ const defaultData = {
 let store = loadData();
 let currentUser = null;
 let adminGateUnlocked = false;
+let selectedMaterial = "all";
 
 const loginSection = document.getElementById("loginSection");
 const adminAccessSection = document.getElementById("adminAccessSection");
@@ -188,6 +189,7 @@ function login(event) {
   }
 
   currentUser = user;
+  selectedMaterial = "all";
   loginMessage.textContent = "";
   loginSection.classList.add("hidden");
   adminAccessSection.classList.add("hidden");
@@ -199,6 +201,7 @@ function login(event) {
 function logout() {
   currentUser = null;
   adminGateUnlocked = false;
+  selectedMaterial = "all";
   document.getElementById("loginForm").reset();
   appSection.classList.add("hidden");
   adminPanel.classList.add("hidden");
@@ -221,7 +224,6 @@ function renderRolePanel() {
 }
 
 function renderAdminData() {
-  renderGatePasskeyPreview();
   const resellerUsers = store.users.filter((u) => u.role === "reseller");
   const walletUser = document.getElementById("walletUser");
   walletUser.innerHTML = '<option value="">Select reseller</option>';
@@ -267,45 +269,66 @@ function renderResellerData() {
   const user = getUserById(currentUser.id);
   currentUser = user;
   document.getElementById("walletBalance").textContent = `${user.wallet} 🪙`;
+  renderMaterialTabs();
   renderCatalog();
   renderCartSummary();
   renderPurchaseRecords();
   renderTrackingRecords();
 }
 
+function renderMaterialTabs() {
+  const tabsWrap = document.getElementById("materialTabs");
+  const categories = [{ key: "all", label: "All Materials" }].concat(
+    Object.entries(CATEGORY_LABELS).map(([key, label]) => ({ key, label }))
+  );
+
+  tabsWrap.innerHTML = categories
+    .map(
+      ({ key, label }) =>
+        `<button class="material-tab ${selectedMaterial === key ? "active" : ""}" data-material="${key}">${label}</button>`
+    )
+    .join("");
+
+  tabsWrap.querySelectorAll("[data-material]").forEach((button) => {
+    button.addEventListener("click", () => {
+      selectedMaterial = button.getAttribute("data-material");
+      renderMaterialTabs();
+      renderCatalog();
+    });
+  });
+}
+
 function renderCatalog() {
   const catalog = document.getElementById("catalog");
+  const title = document.getElementById("catalogSectionTitle");
+  const products =
+    selectedMaterial === "all"
+      ? store.products
+      : store.products.filter((product) => product.category === selectedMaterial);
+
+  title.textContent =
+    selectedMaterial === "all"
+      ? "Showing all material categories"
+      : `Showing: ${CATEGORY_LABELS[selectedMaterial] || "Selected Material"}`;
+
+  if (!products.length) {
+    catalog.innerHTML = '<div class="product-item muted">No products added in this section yet.</div>';
+    return;
+  }
+
   catalog.innerHTML = "";
-
-  Object.entries(CATEGORY_LABELS).forEach(([key, label]) => {
-    const products = store.products.filter((p) => p.category === key);
-
-    const col = document.createElement("div");
-    col.className = "category-column";
-    col.innerHTML = `<h4>${label}</h4>`;
-
-    if (!products.length) {
-      const empty = document.createElement("div");
-      empty.className = "product-item muted";
-      empty.textContent = "No products added yet.";
-      col.appendChild(empty);
-    }
-
-    products.forEach((p) => {
-      const item = document.createElement("div");
-      item.className = "product-item";
-      item.innerHTML = `
-        <img src="${p.image}" alt="${p.name}" loading="lazy" />
-        <strong>${p.name}</strong>
-        <small>${p.details}</small>
-        <p>${p.price} coins</p>
-        <button data-product-id="${p.id}">Add to Cart</button>
-      `;
-      item.querySelector("button").addEventListener("click", () => addToCart(p.id));
-      col.appendChild(item);
-    });
-
-    catalog.appendChild(col);
+  products.forEach((p) => {
+    const item = document.createElement("div");
+    item.className = "product-item";
+    item.innerHTML = `
+      <img src="${p.image}" alt="${p.name}" loading="lazy" />
+      <strong>${p.name}</strong>
+      <small>${p.details}</small>
+      <p>${p.price} coins • ${CATEGORY_LABELS[p.category] || p.category}</p>
+      <button data-product-id="${p.id}">Add to Cart</button>
+    `;
+    item.querySelector("button").addEventListener("click", () => addToCart(p.id));
+    catalog.appendChild(item);
   });
 }
 
