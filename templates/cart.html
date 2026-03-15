@@ -3,9 +3,18 @@
 <h2>Cart</h2>
 <section class="card">
   <p>Wallet Coins: <strong>{{ wallet }}</strong></p>
-  <ul>
+  <ul class="cart-list">
     {% for item in items %}
-      <li>{{ item.product.name }} x {{ item.qty }} = {{ item.subtotal }} coins</li>
+      <li>
+        <div>
+          {{ item.product.name }} x {{ item.qty }} = {{ item.subtotal }} coins
+        </div>
+        <form class="cart-actions" method="post" action="{{ url_for('update_cart', product_id=item.product.id) }}">
+          <input type="number" name="qty" min="0" value="{{ item.qty }}">
+          <button type="submit">Update</button>
+          <button type="submit" name="qty" value="0" class="danger">Remove</button>
+        </form>
+      </li>
     {% else %}
       <li>Cart is empty.</li>
     {% endfor %}

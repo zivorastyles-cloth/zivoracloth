@@ -15,6 +15,17 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-me")
 
 CATEGORY_OPTIONS = ["kids wear", "womens wear", "mens wear", "jewellary"]
 
+DEFAULT_PRODUCTS = [
+    ("Kids Cotton T-Shirt", "kids wear", 45, 50, "Soft cotton daily wear for kids."),
+    ("Girls Party Frock", "kids wear", 85, 25, "Comfort fit frock for special occasions."),
+    ("Women Night Suit Set", "womens wear", 120, 30, "Breathable two-piece night suit."),
+    ("Women Coat Set", "womens wear", 220, 18, "Premium winter coat with matching inner."),
+    ("Mens Casual T-Shirt", "mens wear", 95, 40, "Regular fit t-shirt for daily use."),
+    ("Mens Formal Coat Set", "mens wear", 260, 15, "Classic coat set for events."),
+    ("Artificial Stone Necklace", "jewellary", 140, 35, "Stylish artificial jewellary necklace."),
+    ("Designer Earrings Combo", "jewellary", 70, 45, "Lightweight earrings set."),
+]
+
 
 def get_db():
     if "db" not in g:
@@ -88,6 +99,15 @@ def init_db():
         cur.execute(
             "INSERT INTO users (username, password_hash, role, created_at) VALUES (?, ?, 'admin', ?)",
             ("admin", generate_password_hash("admin123"), datetime.utcnow().isoformat()),
+        )
+    product_exists = cur.execute("SELECT id FROM products LIMIT 1").fetchone()
+    if not product_exists:
+        cur.executemany(
+            """
+            INSERT INTO products (name, category, price_coins, stock, description, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            [(*product, datetime.utcnow().isoformat()) for product in DEFAULT_PRODUCTS],
         )
     db.commit()
     db.close()
@@ -319,6 +339,27 @@ def view_cart():
 
     user = db.execute("SELECT * FROM users WHERE id = ?", (g.current_user["id"],)).fetchone()
     return render_template("cart.html", items=items, total=total, wallet=user["wallet_coins"])
+
+
+@app.post("/cart/update/<int:product_id>")
+@login_required(role="reseller")
+def update_cart(product_id):
+    qty = request.form.get("qty", type=int)
+    if qty is None or qty < 0:
+        flash("Invalid quantity.", "error")
+        return redirect(url_for("view_cart"))
+
+    cart = session.get("cart", {})
+    key = str(product_id)
+    if qty == 0:
+        cart.pop(key, None)
+        flash("Item removed from cart.", "success")
+    else:
+        cart[key] = qty
+        flash("Cart updated.", "success")
+
+    session["cart"] = cart
+    return redirect(url_for("view_cart"))
 
 
 @app.post("/cart/checkout")
