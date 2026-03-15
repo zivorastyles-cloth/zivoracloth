@@ -221,6 +221,7 @@ function renderRolePanel() {
 }
 
 function renderAdminData() {
+  renderGatePasskeyPreview();
   const resellerUsers = store.users.filter((u) => u.role === "reseller");
   const walletUser = document.getElementById("walletUser");
   walletUser.innerHTML = '<option value="">Select reseller</option>';
