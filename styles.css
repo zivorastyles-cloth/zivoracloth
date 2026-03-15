@@ -71,10 +71,6 @@ body {
   color: var(--muted);
 }
 
-.small-text {
-  font-size: 0.86rem;
-}
-
 .grid-form {
   display: grid;
   grid-template-columns: 1fr;

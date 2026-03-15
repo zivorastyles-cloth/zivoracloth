@@ -19,7 +19,6 @@
     <section id="adminAccessSection" class="panel hidden">
       <h2>Admin Entry Gate</h2>
       <p class="muted">Admin panel is hidden behind a private URL and passkey.</p>
-      <p class="muted small-text">Default gate passkey: <code id="adminGateHintText">zivora-admin-gate</code></p>
       <form id="adminGateForm" class="grid-form">
         <label>
           Admin panel passkey
@@ -100,8 +99,6 @@
 
           <article class="card">
             <h3>Security Controls</h3>
-            <p class="muted small-text">Current gate passkey: <code id="gatePasskeyPreview">••••••••</code></p>
-            <button id="toggleGatePreview" type="button" class="secondary">Show/Hide Gate Passkey</button>
             <form id="changeAdminPasswordForm" class="stack">
               <input type="password" id="newAdminPassword" placeholder="New admin login password" required />
               <button type="submit">Change Admin Login Password</button>

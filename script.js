@@ -84,9 +84,6 @@ const welcomeText = document.getElementById("welcomeText");
 const loginMessage = document.getElementById("loginMessage");
 const adminGateMessage = document.getElementById("adminGateMessage");
 const loginHint = document.getElementById("loginHint");
-const adminGateHintText = document.getElementById("adminGateHintText");
-const gatePasskeyPreview = document.getElementById("gatePasskeyPreview");
-let gatePasskeyVisible = false;
 
 function loadData() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -142,7 +139,6 @@ function isAdminRoute() {
 }
 
 function updateLoginModeUI() {
-  adminGateHintText.textContent = store.settings.adminGatePasskey;
   if (isAdminRoute()) {
     adminAccessSection.classList.remove("hidden");
     loginHint.textContent = "Admin route detected. Unlock gate, then login with admin credentials.";
@@ -150,22 +146,6 @@ function updateLoginModeUI() {
     adminAccessSection.classList.add("hidden");
     loginHint.textContent = "Reseller login only on this route.";
   }
-}
-
-function getMaskedPasskey(passkey) {
-  if (!passkey) return "";
-  return "•".repeat(Math.max(passkey.length, 8));
-}
-
-function renderGatePasskeyPreview() {
-  gatePasskeyPreview.textContent = gatePasskeyVisible
-    ? store.settings.adminGatePasskey
-    : getMaskedPasskey(store.settings.adminGatePasskey);
-}
-
-function toggleGatePasskeyPreview() {
-  gatePasskeyVisible = !gatePasskeyVisible;
-  renderGatePasskeyPreview();
 }
 
 function unlockAdminGate(event) {
@@ -546,8 +526,6 @@ function changeGatePasskey(event) {
   store.settings.adminGatePasskey = newPasskey;
   saveData();
   event.target.reset();
-  updateLoginModeUI();
-  renderGatePasskeyPreview();
   alert("Admin gate passkey updated.");
 }
 
@@ -562,7 +540,6 @@ function bindEvents() {
   document.getElementById("clearCartBtn").addEventListener("click", clearCart);
   document.getElementById("changeAdminPasswordForm").addEventListener("submit", changeAdminPassword);
   document.getElementById("changeGatePasswordForm").addEventListener("submit", changeGatePasskey);
-  document.getElementById("toggleGatePreview").addEventListener("click", toggleGatePasskeyPreview);
 }
 
 bindEvents();
