@@ -11,6 +11,12 @@ const CATEGORY_LABELS = {
   jewellery: "Jewellery",
 };
 
+const BADGE_LABELS = {
+  trending: "Trending",
+  "best-seller": "Best Seller",
+  "new-arrival": "New Arrival",
+};
+
 const fallbackImage =
   "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=60";
 
@@ -338,6 +344,7 @@ async function createProduct(event) {
   event.preventDefault();
   const name = document.getElementById("productName").value.trim();
   const category = document.getElementById("productCategory").value;
+  const badge = document.getElementById("productBadge").value;
   const price = Number(document.getElementById("productPrice").value);
   const details = document.getElementById("productDetails").value.trim();
   const imageUrl = document.getElementById("productImage").value.trim();
@@ -353,6 +360,58 @@ async function createProduct(event) {
   const uploadText = document.getElementById("uploadFileName");
   if (uploadText) uploadText.textContent = "No file selected (you can still use image URL)";
   renderProductsAdminTable();
+}
+
+function openEditProductModal(productId) {
+  const product = store.products.find((p) => p.id === productId);
+  if (!product) return;
+
+  document.getElementById("editProductId").value = String(product.id);
+  document.getElementById("editProductName").value = product.name;
+  document.getElementById("editProductCategory").value = product.category;
+  document.getElementById("editProductBadge").value = product.badge || "";
+  document.getElementById("editProductPrice").value = String(product.price);
+  document.getElementById("editProductDetails").value = product.details;
+  document.getElementById("editProductImage").value = product.image;
+  document.getElementById("editProductModal").classList.remove("hidden");
+}
+
+function closeEditProductModal() {
+  document.getElementById("editProductModal").classList.add("hidden");
+}
+
+function updateProduct(event) {
+  event.preventDefault();
+  const productId = Number(document.getElementById("editProductId").value);
+  const product = store.products.find((p) => p.id === productId);
+  if (!product) return;
+
+  const name = document.getElementById("editProductName").value.trim();
+  const category = document.getElementById("editProductCategory").value;
+  const badge = document.getElementById("editProductBadge").value;
+  const price = Number(document.getElementById("editProductPrice").value);
+  const details = document.getElementById("editProductDetails").value.trim();
+  const image = document.getElementById("editProductImage").value.trim() || fallbackImage;
+
+  if (!name || !category || !price || !details) {
+    alert("Please fill all required fields.");
+    return;
+  }
+
+  product.name = name;
+  product.category = category;
+  product.badge = badge;
+  product.price = price;
+  product.details = details;
+  product.image = image;
+
+  saveData();
+  closeEditProductModal();
+  renderAdminData();
+  if (currentUser?.role === "reseller") {
+    renderResellerData();
+  }
+  alert("Product updated.");
 }
 
 function fileToDataUrl(file) {
