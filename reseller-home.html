@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zivora | Reseller Home</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="reseller-home">
+  <header class="topbar">
+    <div class="brand-wrap">
+      <img src="assets/zivora-logo.svg" alt="Zivora Styles logo" class="brand-logo" />
+      <div>
+        <h1>Zivora Fashion Hub</h1>
+        <p id="welcomeText">Reseller Store</p>
+      </div>
+    </div>
+    <nav class="market-nav">
+      <a class="nav-link active" href="reseller-home.html">Home</a>
+      <a class="nav-link" href="reseller-wallet.html">Wallet</a>
+      <a class="nav-link" href="reseller-orders.html">Orders</a>
+      <a class="nav-link cart-pill" href="reseller-cart.html">🛒 Cart <span id="navCartCount">0</span></a>
+      <button id="logoutBtn" class="secondary small">Logout</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="panel">
+      <h2 id="catalogSectionTitle">Home: All categories</h2>
+      <div id="resellerNavLinks" class="reseller-nav-links"></div>
+      <div id="catalog" class="catalog-grid"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

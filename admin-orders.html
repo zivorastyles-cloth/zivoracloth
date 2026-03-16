@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zivora Admin | Orders</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="admin-orders">
+  <header class="topbar">
+    <div class="brand-wrap">
+      <img src="assets/zivora-logo.svg" alt="Zivora Styles logo" class="brand-logo" />
+      <div>
+        <h1>Admin: Orders & Tracking</h1>
+        <p id="welcomeText">Admin Console</p>
+      </div>
+    </div>
+    <nav class="market-nav">
+      <a class="nav-link" href="admin-users.html">Users</a>
+      <a class="nav-link" href="admin-products.html">Products</a>
+      <a class="nav-link active" href="admin-orders.html">Orders</a>
+      <a class="nav-link" href="admin-security.html">Security</a>
+      <button id="logoutBtn" class="secondary small">Logout</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h3>Booked Orders (Tracking + Cancel)</h3>
+      <div id="ordersTableWrap"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

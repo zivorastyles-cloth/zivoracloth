@@ -3,46 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zivora Cloth Dealer Portal</title>
+  <title>Zivora | Login</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body data-page="login">
   <header class="topbar">
     <div class="brand-wrap">
       <img src="assets/zivora-logo.svg" alt="Zivora Styles logo" class="brand-logo" />
       <div>
-        <h1>Zivora Cloth Dealer Store</h1>
-        <p>Kids Wear • Women's Wear • Men's Wear • Jewellery</p>
+        <h1>Zivora Fashion Hub</h1>
+        <p>Myntra / Meesho inspired reseller experience</p>
       </div>
     </div>
-    <span class="chip">B2B Reseller Portal</span>
+    <div class="row">
+      <a class="nav-link" href="index.html">Reseller Login</a>
+      <a class="nav-link" href="admin-login.html">Admin Login</a>
+    </div>
   </header>
 
   <main class="container">
-    <section class="hero-banner panel">
+    <section class="panel hero-banner">
       <div>
-        <p class="eyebrow">Inspired by leading ecommerce storefronts</p>
-        <h2>Fast catalog browsing, clearer cards, and smoother reseller checkout.</h2>
+        <p class="eyebrow">Fast fashion B2B storefront</p>
+        <h2>Separate pages for catalog, cart, wallet, orders and admin operations.</h2>
       </div>
-      <p class="muted">Admins can now upload product photos directly from computer (no image URL required).</p>
+      <p class="muted">No more single long page — navigate like modern ecommerce apps.</p>
     </section>
 
-    <section id="adminAccessSection" class="panel hidden">
-      <h2>Admin Entry Gate</h2>
-      <p class="muted">Admin panel is hidden behind a private URL and passkey.</p>
-      <form id="adminGateForm" class="grid-form">
-        <label>
-          Admin panel passkey
-          <input type="password" id="adminGatePassword" required placeholder="Enter admin panel passkey" />
-        </label>
-        <button type="submit">Unlock Admin Login</button>
-      </form>
-      <p id="adminGateMessage" class="message"></p>
-    </section>
-
-    <section id="loginSection" class="panel">
-      <h2>Authorized Login</h2>
-      <p class="muted" id="loginHint">Enter your credentials to continue.</p>
+    <section id="loginSection" class="panel auth-card">
+      <h2>Reseller Login</h2>
       <form id="loginForm" class="grid-form">
         <label>
           User ID
@@ -52,194 +41,10 @@
           Password
           <input type="password" id="password" required placeholder="Enter password" />
         </label>
-        <button type="submit">Login</button>
+        <button type="submit">Login to Store</button>
       </form>
       <p id="loginMessage" class="message"></p>
-    </section>
-
-    <section id="appSection" class="hidden">
-      <nav class="app-nav">
-        <span id="welcomeText"></span>
-        <div id="resellerNavLinks" class="reseller-nav-links hidden"></div>
-        <div>
-          <button id="logoutBtn" class="secondary">Logout</button>
-        </div>
-      </nav>
-
-      <section id="adminPanel" class="hidden panel">
-        <h2>Admin Panel (Dealer Controls)</h2>
-        <div class="cards two-cols">
-          <article class="card">
-            <h3>Create Reseller User</h3>
-            <form id="createUserForm" class="stack">
-              <input type="text" id="newUserId" placeholder="User ID" required />
-              <input type="password" id="newUserPassword" placeholder="Password" required />
-              <button type="submit">Create User</button>
-            </form>
-          </article>
-
-          <article class="card">
-            <h3>Upload Product</h3>
-            <form id="productForm" class="stack">
-              <input type="text" id="productName" placeholder="Product name" required />
-              <select id="productCategory" required>
-                <option value="">Select category</option>
-                <option value="kids">Kids Wear</option>
-                <option value="women">Women's Wear</option>
-                <option value="men">Men's Wear</option>
-                <option value="jewellery">Jewellery</option>
-              </select>
-              <select id="productBadge">
-                <option value="">No badge</option>
-                <option value="trending">Trending</option>
-                <option value="best-seller">Best Seller</option>
-                <option value="new-arrival">New Arrival</option>
-              </select>
-              <input type="number" id="productPrice" min="1" placeholder="Coin price" required />
-              <input type="text" id="productDetails" placeholder="Short details" required />
-              <label class="file-label" for="productImageFile">Product image from computer</label>
-              <input type="file" id="productImageFile" accept="image/*" />
-              <p id="uploadFileName" class="muted small-text">No file selected (you can still use image URL)</p>
-              <input type="url" id="productImage" placeholder="Fallback image URL (optional)" />
-              <button type="submit">Add Product</button>
-            </form>
-          </article>
-
-          <article class="card">
-            <h3>Load Coins to Reseller Wallet</h3>
-            <form id="walletForm" class="stack">
-              <select id="walletUser" required></select>
-              <input type="number" id="coinAmount" min="1" placeholder="Coins to add" required />
-              <button type="submit">Upload Coins</button>
-            </form>
-          </article>
-
-          <article class="card">
-            <h3>Security Controls</h3>
-            <form id="changeAdminPasswordForm" class="stack">
-              <input type="password" id="newAdminPassword" placeholder="New admin login password" required />
-              <button type="submit">Change Admin Login Password</button>
-            </form>
-            <form id="changeGatePasswordForm" class="stack top-space">
-              <input type="password" id="newGatePassword" placeholder="New admin panel gate passkey" required />
-              <button type="submit">Change Admin Gate Passkey</button>
-            </form>
-          </article>
-        </div>
-
-        <div class="card">
-          <h3>Users (Username + Password)</h3>
-          <div id="usersTableWrap"></div>
-        </div>
-
-        <div class="card">
-          <h3>Products (Delete Products)</h3>
-          <div id="productsTableWrap"></div>
-        </div>
-
-        <div id="editProductModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="editProductTitle">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h3 id="editProductTitle">Edit Product</h3>
-              <button id="closeEditProductModal" class="secondary small" type="button">Close</button>
-            </div>
-            <form id="editProductForm" class="stack">
-              <input type="hidden" id="editProductId" />
-              <input type="text" id="editProductName" placeholder="Product name" required />
-              <select id="editProductCategory" required>
-                <option value="kids">Kids Wear</option>
-                <option value="women">Women's Wear</option>
-                <option value="men">Men's Wear</option>
-                <option value="jewellery">Jewellery</option>
-              </select>
-              <select id="editProductBadge">
-                <option value="">No badge</option>
-                <option value="trending">Trending</option>
-                <option value="best-seller">Best Seller</option>
-                <option value="new-arrival">New Arrival</option>
-              </select>
-              <input type="number" id="editProductPrice" min="1" placeholder="Coin price" required />
-              <input type="text" id="editProductDetails" placeholder="Short details" required />
-              <input type="url" id="editProductImage" placeholder="Image URL" />
-              <button type="submit">Save Changes</button>
-            </form>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3>Booked Orders (Tracking + Cancel)</h3>
-          <div id="ordersTableWrap"></div>
-        </div>
-      </section>
-
-      <section id="resellerPanel" class="hidden panel reseller-simple">
-        <h2>Reseller Dashboard</h2>
-
-        <div class="cards two-cols">
-          <article class="card">
-            <h3>Wallet</h3>
-            <p>Available Coins:</p>
-            <p class="big" id="walletBalance">0 🪙</p>
-          </article>
-          <article class="card">
-            <h3>Cart</h3>
-            <p id="cartSummary">0 item(s) • 0 coins</p>
-            <p class="muted" id="savedAddressPreview">Shipping details will be collected during checkout for each order.</p>
-            <div class="row">
-              <button id="checkoutBtn">Checkout (Pay with Coins)</button>
-              <button id="clearCartBtn" class="secondary">Clear Cart</button>
-            </div>
-          </article>
-        </div>
-
-        <article class="card">
-          <h3>Shipping Address (required for checkout)</h3>
-          <p class="muted">Address is collected fresh for every checkout order.</p>
-          <form id="shippingForm" class="grid-form">
-            <label>
-              Full name
-              <input type="text" id="shipName" required placeholder="Receiver full name" />
-            </label>
-            <label>
-              Phone number
-              <input type="tel" id="shipPhone" required placeholder="10-digit phone" />
-            </label>
-            <label>
-              Address line
-              <input type="text" id="shipLine" required placeholder="House no, street" />
-            </label>
-            <label>
-              City
-              <input type="text" id="shipCity" required placeholder="City" />
-            </label>
-            <label>
-              State
-              <input type="text" id="shipState" required placeholder="State" />
-            </label>
-            <label>
-              Pincode
-              <input type="text" id="shipPincode" required placeholder="6-digit pincode" />
-            </label>
-            <button type="submit">Save Address</button>
-          </form>
-        </article>
-
-        <article class="card">
-          <h3 id="catalogSectionTitle">Home: All categories</h3>
-          <div id="catalog" class="catalog-grid"></div>
-        </article>
-
-        <div class="cards two-cols">
-          <article class="card">
-            <h3>Purchase History</h3>
-            <div id="purchaseRecords" class="records"></div>
-          </article>
-          <article class="card">
-            <h3>Order Tracking</h3>
-            <div id="trackingRecords" class="records"></div>
-          </article>
-        </div>
-      </section>
+      <p class="muted small-text">Demo reseller: <strong>reseller01</strong> / <strong>reseller123</strong></p>
     </section>
   </main>
 

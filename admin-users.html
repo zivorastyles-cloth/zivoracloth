@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zivora Admin | Users & Wallet</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="admin-users">
+  <header class="topbar">
+    <div class="brand-wrap">
+      <img src="assets/zivora-logo.svg" alt="Zivora Styles logo" class="brand-logo" />
+      <div>
+        <h1>Admin: Users & Wallet</h1>
+        <p id="welcomeText">Admin Console</p>
+      </div>
+    </div>
+    <nav class="market-nav">
+      <a class="nav-link active" href="admin-users.html">Users</a>
+      <a class="nav-link" href="admin-products.html">Products</a>
+      <a class="nav-link" href="admin-orders.html">Orders</a>
+      <a class="nav-link" href="admin-security.html">Security</a>
+      <button id="logoutBtn" class="secondary small">Logout</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="cards two-cols">
+      <article class="card">
+        <h3>Create Reseller User</h3>
+        <form id="createUserForm" class="stack">
+          <input type="text" id="newUserId" placeholder="User ID" required />
+          <input type="password" id="newUserPassword" placeholder="Password" required />
+          <button type="submit">Create User</button>
+        </form>
+      </article>
+      <article class="card">
+        <h3>Load Coins to Reseller Wallet</h3>
+        <form id="walletForm" class="stack">
+          <select id="walletUser" required></select>
+          <input type="number" id="coinAmount" min="1" placeholder="Coins to add" required />
+          <button type="submit">Upload Coins</button>
+        </form>
+      </article>
+    </section>
+
+    <section class="card">
+      <h3>Users (Username + Password)</h3>
+      <div id="usersTableWrap"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

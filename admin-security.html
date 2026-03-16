@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zivora Admin | Security</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="admin-security">
+  <header class="topbar">
+    <div class="brand-wrap">
+      <img src="assets/zivora-logo.svg" alt="Zivora Styles logo" class="brand-logo" />
+      <div>
+        <h1>Admin: Security</h1>
+        <p id="welcomeText">Admin Console</p>
+      </div>
+    </div>
+    <nav class="market-nav">
+      <a class="nav-link" href="admin-users.html">Users</a>
+      <a class="nav-link" href="admin-products.html">Products</a>
+      <a class="nav-link" href="admin-orders.html">Orders</a>
+      <a class="nav-link active" href="admin-security.html">Security</a>
+      <button id="logoutBtn" class="secondary small">Logout</button>
+    </nav>
+  </header>
+
+  <main class="container cards two-cols">
+    <section class="card">
+      <h3>Change Admin Login Password</h3>
+      <form id="changeAdminPasswordForm" class="stack">
+        <input type="password" id="newAdminPassword" placeholder="New admin login password" required />
+        <button type="submit">Change Admin Login Password</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h3>Change Admin Gate Passkey</h3>
+      <form id="changeGatePasswordForm" class="stack">
+        <input type="password" id="newGatePassword" placeholder="New admin panel gate passkey" required />
+        <button type="submit">Change Admin Gate Passkey</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
