@@ -137,3 +137,5 @@ button.small { padding: .4rem .65rem; }
 #adminGateStatus.success { color: var(--success); font-weight: 600; }
 .demo-credentials { display: none; margin-top: .6rem; }
 .demo-credentials.visible { display: block; }
+
+.hidden { display: none; }
