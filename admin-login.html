@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zivora | Admin Login</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="admin-login">
+  <header class="topbar">
+    <div class="brand-wrap">
+      <img src="assets/zivora-logo.svg" alt="Zivora Styles logo" class="brand-logo" />
+      <div>
+        <h1>Zivora Admin Console</h1>
+        <p>Manage resellers, products and orders</p>
+      </div>
+    </div>
+    <div class="row">
+      <a class="nav-link" href="index.html">Reseller Login</a>
+      <a class="nav-link active" href="admin-login.html">Admin Login</a>
+    </div>
+  </header>
+
+  <main class="container admin-login-layout">
+    <section class="panel">
+      <h2>Admin Gate Passkey</h2>
+      <form id="adminGateForm" class="grid-form">
+        <label>
+          Admin panel passkey
+          <input type="password" id="adminGatePassword" required placeholder="Enter gate passkey" />
+        </label>
+        <button type="submit">Unlock Admin Access</button>
+      </form>
+      <p id="adminGateMessage" class="message"></p>
+    </section>
+
+    <section class="panel">
+      <h2>Admin Login</h2>
+      <form id="loginForm" class="grid-form">
+        <label>
+          Admin ID
+          <input type="text" id="userId" required placeholder="admin" />
+        </label>
+        <label>
+          Password
+          <input type="password" id="password" required placeholder="Enter admin password" />
+        </label>
+        <button type="submit">Enter Dashboard</button>
+      </form>
+      <p id="loginMessage" class="message"></p>
+      <p class="muted small-text">Demo admin: <strong>admin</strong> / <strong>admin123</strong></p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
