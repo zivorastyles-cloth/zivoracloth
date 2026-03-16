@@ -49,6 +49,7 @@
     <section id="appSection" class="hidden">
       <nav class="app-nav">
         <span id="welcomeText"></span>
+        <div id="resellerNavLinks" class="reseller-nav-links hidden"></div>
         <div>
           <button id="logoutBtn" class="secondary">Logout</button>
         </div>
@@ -124,6 +125,7 @@
           <article class="card">
             <h3>Cart</h3>
             <p id="cartSummary">0 item(s) • 0 coins</p>
+            <p class="muted" id="savedAddressPreview">No shipping address saved yet.</p>
             <div class="row">
               <button id="checkoutBtn">Checkout (Pay with Coins)</button>
               <button id="clearCartBtn" class="secondary">Clear Cart</button>
@@ -131,9 +133,39 @@
           </article>
         </div>
 
+        <article class="card">
+          <h3>Shipping Address (required for checkout)</h3>
+          <form id="shippingForm" class="grid-form">
+            <label>
+              Full name
+              <input type="text" id="shipName" required placeholder="Receiver full name" />
+            </label>
+            <label>
+              Phone number
+              <input type="tel" id="shipPhone" required placeholder="10-digit phone" />
+            </label>
+            <label>
+              Address line
+              <input type="text" id="shipLine" required placeholder="House/Street/Area" />
+            </label>
+            <label>
+              City
+              <input type="text" id="shipCity" required placeholder="City" />
+            </label>
+            <label>
+              State
+              <input type="text" id="shipState" required placeholder="State" />
+            </label>
+            <label>
+              Pincode
+              <input type="text" id="shipPincode" required placeholder="6-digit pincode" />
+            </label>
+            <button type="submit">Save Shipping Address</button>
+          </form>
+        </article>
+
         <h3>Product Catalog</h3>
-        <p class="muted">Browse by material type (category) using the quick sections below.</p>
-        <div id="materialTabs" class="material-tabs"></div>
+        <p class="muted">Use navbar category pages for quicker browsing.</p>
         <h4 id="catalogSectionTitle" class="catalog-title"></h4>
         <div id="catalog" class="catalog-grid"></div>
 

@@ -139,6 +139,28 @@ button.small {
   justify-content: space-between;
   align-items: center;
   margin: 0.3rem 0 0.8rem;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.reseller-nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.category-link {
+  background: #eef2ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+}
+
+.category-link.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
 }
 
 .cards {
@@ -183,27 +205,6 @@ button.small {
   text-align: left;
   padding: 0.6rem;
   font-size: 0.9rem;
-}
-
-.material-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
-  margin-bottom: 0.8rem;
-}
-
-.material-tab {
-  background: #eef2ff;
-  color: #3730a3;
-  border: 1px solid #c7d2fe;
-  padding: 0.45rem 0.75rem;
-  border-radius: 999px;
-}
-
-.material-tab.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
 }
 
 .catalog-title {
