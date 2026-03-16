@@ -1,5 +1,5 @@
-const STORAGE_KEY = "zivora_store_data_v3";
-const LEGACY_STORAGE_KEYS = ["zivora_store_data_v2"];
+const STORAGE_KEY = "zivora_store_data_v4";
+const LEGACY_STORAGE_KEYS = ["zivora_store_data_v3", "zivora_store_data_v2"];
 const ADMIN_PANEL_QUERY = "admin";
 const CATEGORY_LABELS = {
   all: "Home",
@@ -88,6 +88,8 @@ const welcomeText = document.getElementById("welcomeText");
 const loginMessage = document.getElementById("loginMessage");
 const adminGateMessage = document.getElementById("adminGateMessage");
 const loginHint = document.getElementById("loginHint");
+const productImageFileInput = document.getElementById("productImageFile");
+const uploadFileName = document.getElementById("uploadFileName");
 
 function loadData() {
   const primaryRaw = localStorage.getItem(STORAGE_KEY);
@@ -583,13 +585,29 @@ function deleteResellerUser(userId) {
 
 function addProduct(event) {
   event.preventDefault();
+  createProduct(event).catch((error) => {
+    alert(error.message || "Unable to upload product image.");
+  });
+}
+
+async function createProduct(event) {
   const name = document.getElementById("productName").value.trim();
   const category = document.getElementById("productCategory").value;
   const price = Number(document.getElementById("productPrice").value);
   const details = document.getElementById("productDetails").value.trim();
-  const image = document.getElementById("productImage").value.trim();
+  const imageUrl = document.getElementById("productImage").value.trim();
+  const imageFile = productImageFileInput.files[0];
+  let image = imageUrl;
 
-  if (!name || !category || !price || !details || !image) return;
+  if (imageFile) {
+    image = await fileToDataUrl(imageFile);
+  }
+
+  if (!image) {
+    image = fallbackImage;
+  }
+
+  if (!name || !category || !price || !details) return;
 
   store.products.push({
     id: store.nextProductId++,
@@ -602,7 +620,26 @@ function addProduct(event) {
 
   saveData();
   event.target.reset();
+  uploadFileName.textContent = "No file selected (you can still use image URL)";
   alert("Product uploaded.");
+}
+
+function fileToDataUrl(file) {
+  if (!file.type.startsWith("image/")) {
+    return Promise.reject(new Error("Please upload an image file only."));
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("File read failed. Please retry."));
+    reader.readAsDataURL(file);
+  });
+}
+
+function updateSelectedFileName() {
+  const file = productImageFileInput.files[0];
+  uploadFileName.textContent = file ? `Selected file: ${file.name}` : "No file selected (you can still use image URL)";
 }
 
 function addCoins(event) {
@@ -663,6 +700,7 @@ function bindEvents() {
   document.getElementById("changeAdminPasswordForm").addEventListener("submit", changeAdminPassword);
   document.getElementById("changeGatePasswordForm").addEventListener("submit", changeGatePasskey);
   document.getElementById("shippingForm").addEventListener("submit", saveShippingAddress);
+  productImageFileInput.addEventListener("change", updateSelectedFileName);
 
   window.addEventListener("storage", () => {
     if (currentUser && currentUser.role === "reseller") {
