@@ -291,6 +291,180 @@ function renderAdminData() {
       deleteResellerUser(userId);
     });
   });
+
+  renderProductsAdminTable();
+  renderOrdersAdminTable();
+}
+
+function renderProductsAdminTable() {
+  const wrap = document.getElementById("productsTableWrap");
+  if (!store.products.length) {
+    wrap.innerHTML = '<p class="muted">No products available.</p>';
+    return;
+  }
+
+  const rows = store.products
+    .map(
+      (p) => `<tr>
+        <td>${p.id}</td>
+        <td>${p.name}</td>
+        <td>${CATEGORY_LABELS[p.category] || p.category}</td>
+        <td>${p.price}</td>
+        <td><button class="danger small" data-delete-product="${p.id}">Delete</button></td>
+      </tr>`
+    )
+    .join("");
+
+  wrap.innerHTML = `
+    <table class="table">
+      <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price (coins)</th><th>Action</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+
+  wrap.querySelectorAll("[data-delete-product]").forEach((button) => {
+    button.addEventListener("click", () => {
+      deleteProduct(Number(button.getAttribute("data-delete-product")));
+    });
+  });
+}
+
+function renderOrdersAdminTable() {
+  const wrap = document.getElementById("ordersTableWrap");
+  const rows = [];
+
+  Object.entries(store.purchases).forEach(([userId, orders]) => {
+    orders.forEach((order) => {
+      const track = (store.tracking[userId] || []).find((t) => t.orderId === order.orderId);
+      rows.push({ userId, order, track });
+    });
+  });
+
+  if (!rows.length) {
+    wrap.innerHTML = '<p class="muted">No booked orders found.</p>';
+    return;
+  }
+
+  wrap.innerHTML = `
+    <table class="table">
+      <thead>
+        <tr><th>Order ID</th><th>Reseller</th><th>Total</th><th>Tracking</th><th>Location</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        ${rows
+          .slice()
+          .reverse()
+          .map(({ userId, order, track }) => {
+            const safeStatus = track?.status || "Order Placed";
+            const safeLocation = track?.location || (order.shippingAddress ? `${order.shippingAddress.city}, ${order.shippingAddress.state}` : "-");
+            return `<tr>
+              <td>${order.orderId}</td>
+              <td>${userId}</td>
+              <td>${order.total} coins</td>
+              <td>
+                <select data-track-status="${order.orderId}" data-track-user="${userId}">
+                  ${["Order Placed", "Packed", "Shipped", "Out for Delivery", "Delivered", "Cancelled"]
+                    .map((status) => `<option value="${status}" ${status === safeStatus ? "selected" : ""}>${status}</option>`)
+                    .join("")}
+                </select>
+              </td>
+              <td><input type="text" value="${safeLocation}" data-track-location="${order.orderId}" data-track-user="${userId}" /></td>
+              <td>
+                <div class="row">
+                  <button class="small" data-update-order="${order.orderId}" data-order-user="${userId}">Update</button>
+                  <button class="danger small" data-cancel-order="${order.orderId}" data-order-user="${userId}">Cancel</button>
+                </div>
+              </td>
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table>
+  `;
+
+  wrap.querySelectorAll("[data-update-order]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const orderId = button.getAttribute("data-update-order");
+      const userId = button.getAttribute("data-order-user");
+      const status = wrap.querySelector(`[data-track-status="${orderId}"][data-track-user="${userId}"]`)?.value;
+      const location = wrap
+        .querySelector(`[data-track-location="${orderId}"][data-track-user="${userId}"]`)
+        ?.value.trim();
+      updateOrderTracking(userId, orderId, status, location);
+    });
+  });
+
+  wrap.querySelectorAll("[data-cancel-order]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const orderId = button.getAttribute("data-cancel-order");
+      const userId = button.getAttribute("data-order-user");
+      cancelOrder(userId, orderId);
+    });
+  });
+}
+
+function deleteProduct(productId) {
+  if (!productId) return;
+  const product = store.products.find((p) => p.id === productId);
+  if (!product) return;
+
+  const confirmed = window.confirm(`Delete product "${product.name}"?`);
+  if (!confirmed) return;
+
+  store.products = store.products.filter((p) => p.id !== productId);
+  Object.keys(store.carts).forEach((userId) => {
+    store.carts[userId] = (store.carts[userId] || []).filter((id) => id !== productId);
+  });
+
+  saveData();
+  renderAdminData();
+}
+
+function updateOrderTracking(userId, orderId, status, location) {
+  if (!userId || !orderId || !status || !location) {
+    alert("Tracking status and location are required.");
+    return;
+  }
+
+  if (!store.tracking[userId]) store.tracking[userId] = [];
+  const existing = store.tracking[userId].find((t) => t.orderId === orderId);
+  const updatedAt = new Date().toLocaleString();
+
+  if (existing) {
+    existing.status = status;
+    existing.location = location;
+    existing.updatedAt = updatedAt;
+  } else {
+    store.tracking[userId].push({ orderId, status, location, updatedAt });
+  }
+
+  saveData();
+  renderAdminData();
+  alert(`Tracking updated for ${orderId}.`);
+}
+
+function cancelOrder(userId, orderId) {
+  if (!userId || !orderId) return;
+  const confirmed = window.confirm(`Cancel order ${orderId} for reseller ${userId}?`);
+  if (!confirmed) return;
+
+  const orders = store.purchases[userId] || [];
+  const order = orders.find((o) => o.orderId === orderId);
+  if (!order) return;
+
+  const user = getUserById(userId);
+  if (user) {
+    user.wallet += order.total;
+  }
+
+  store.purchases[userId] = orders.filter((o) => o.orderId !== orderId);
+  if (store.tracking[userId]) {
+    store.tracking[userId] = store.tracking[userId].filter((t) => t.orderId !== orderId);
+  }
+
+  saveData();
+  renderAdminData();
+  alert(`Order ${orderId} cancelled and wallet refunded.`);
 }
 
 function renderResellerNav() {
@@ -399,47 +573,43 @@ function getShippingAddressFromForm() {
   const pincode = document.getElementById("shipPincode").value.trim();
 
   if (!name || !phoneRaw || !line || !city || !state || !pincode) {
-    alert("Please fill complete shipping details before checkout.");
-    return null;
+    return { error: "Please fill all shipping address fields for this order." };
   }
 
   const phone = phoneRaw.replace(/\D/g, "");
   if (!/^\d{10}$/.test(phone)) {
-    alert("Phone number must be 10 digits.");
-    return null;
+    return { error: "Phone number must be 10 digits." };
   }
 
   if (!/^\d{6}$/.test(pincode)) {
-    alert("Pincode must be 6 digits.");
-    return null;
+    return { error: "Pincode must be 6 digits." };
   }
 
   return {
-    name,
-    phone,
-    line,
-    city,
-    state,
-    pincode,
+    address: {
+      name,
+      phone,
+      line,
+      city,
+      state,
+      pincode,
+    },
   };
-}
-
-function renderAddressPreview(address) {
-  const preview = document.getElementById("savedAddressPreview");
-  if (!address) {
-    preview.textContent = "Shipping details will be collected during checkout for each order.";
-    return;
-  }
-
-  preview.textContent = `Checkout address: ${address.name}, ${address.line}, ${address.city}, ${address.state} - ${address.pincode}, ${address.phone}`;
 }
 
 function saveShippingAddress(event) {
   event.preventDefault();
-  const address = getShippingAddressFromForm();
-  if (!address) return;
-  renderAddressPreview(address);
-  alert("Shipping address ready. You can continue with checkout.");
+  const parsed = getShippingAddressFromForm();
+  if (parsed.error) {
+    alert(parsed.error);
+    return;
+  }
+
+  const address = parsed.address;
+  document.getElementById(
+    "savedAddressPreview"
+  ).textContent = `Ready for this order: ${address.name}, ${address.line}, ${address.city}, ${address.state} - ${address.pincode} (${address.phone})`;
+  alert("Address validated. Use Checkout to place this order.");
 }
 
 function checkout() {
@@ -449,9 +619,13 @@ function checkout() {
     return;
   }
 
-  const address = getShippingAddressFromForm();
-  if (!address) return;
+  const parsed = getShippingAddressFromForm();
+  if (parsed.error) {
+    alert(parsed.error);
+    return;
+  }
 
+  const address = parsed.address;
   const items = cart.map((id) => store.products.find((p) => p.id === id)).filter(Boolean);
   const total = items.reduce((sum, item) => sum + item.price, 0);
   const user = getUserById(currentUser.id);
@@ -486,6 +660,9 @@ function checkout() {
   });
 
   saveData();
+  document.getElementById("shippingForm").reset();
+  document.getElementById("savedAddressPreview").textContent =
+    "Shipping details will be collected for the next order.";
   renderResellerData();
   document.getElementById("shippingForm").reset();
   renderAddressPreview(null);
