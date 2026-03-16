@@ -359,8 +359,9 @@ function renderProductsAdminTable() {
   const wrap = document.getElementById("productsTableWrap");
   if (!wrap) return;
   if (!store.products.length) return (wrap.innerHTML = '<p class="muted">No products available.</p>');
-  const rows = store.products.map((p) => `<tr><td>${p.id}</td><td>${p.name}</td><td>${CATEGORY_LABELS[p.category] || p.category}</td><td>${p.price}</td><td><button class="danger small" data-delete-product="${p.id}">Delete</button></td></tr>`).join("");
-  wrap.innerHTML = `<table class="table"><thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price (coins)</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table>`;
+  const rows = store.products.map((p) => `<tr><td>${p.id}</td><td>${p.name}</td><td>${CATEGORY_LABELS[p.category] || p.category}</td><td>${p.price}</td><td>${p.details}</td><td>${BADGE_LABELS[p.badge] || "-"}</td><td><div class="row"><button class="small" data-edit-product="${p.id}">Edit</button><button class="danger small" data-delete-product="${p.id}">Delete</button></div></td></tr>`).join("");
+  wrap.innerHTML = `<table class="table"><thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price (coins)</th><th>Details</th><th>Badge</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table>`;
+  wrap.querySelectorAll("[data-edit-product]").forEach((b) => b.addEventListener("click", () => openEditProductModal(Number(b.getAttribute("data-edit-product")))));
   wrap.querySelectorAll("[data-delete-product]").forEach((b) => b.addEventListener("click", () => deleteProduct(Number(b.getAttribute("data-delete-product")))));
 }
 
@@ -403,10 +404,18 @@ function deleteResellerUser(userId) {
 function addCoins(event) {
   event.preventDefault();
   const userId = document.getElementById("walletUser").value;
+  const mode = document.getElementById("coinMode").value;
   const amount = Number(document.getElementById("coinAmount").value);
   const user = getUserById(userId);
-  if (!user || user.role !== "reseller" || amount < 1) return;
-  user.wallet += amount; saveData(); event.target.reset(); renderUsersTable();
+  if (!user || user.role !== "reseller" || !Number.isFinite(amount) || amount < 0) return alert("Enter a valid coin amount.");
+
+  if (mode === "add") user.wallet += amount;
+  if (mode === "remove") user.wallet = Math.max(0, user.wallet - amount);
+  if (mode === "set") user.wallet = amount;
+
+  saveData();
+  event.target.reset();
+  renderUsersTable();
 }
 
 async function createProduct(event) {
@@ -423,7 +432,7 @@ async function createProduct(event) {
   if (imageFile) image = await fileToDataUrl(imageFile);
   if (!image) image = fallbackImage;
   if (!name || !category || !price || !details) return;
-  store.products.push({ id: store.nextProductId++, name, category, price, details, image });
+  store.products.push({ id: store.nextProductId++, name, category, badge, price, details, image });
   saveData();
   event.target.reset();
   const uploadText = document.getElementById("uploadFileName");
@@ -442,11 +451,12 @@ function openEditProductModal(productId) {
   document.getElementById("editProductPrice").value = String(product.price);
   document.getElementById("editProductDetails").value = product.details;
   document.getElementById("editProductImage").value = product.image;
-  document.getElementById("editProductModal").classList.remove("hidden");
+  document.getElementById("editProductPanel").classList.remove("hidden");
 }
 
 function closeEditProductModal() {
-  document.getElementById("editProductModal").classList.add("hidden");
+  const panel = document.getElementById("editProductPanel");
+  if (panel) panel.classList.add("hidden");
 }
 
 function updateProduct(event) {
@@ -476,10 +486,7 @@ function updateProduct(event) {
 
   saveData();
   closeEditProductModal();
-  renderAdminData();
-  if (currentUser?.role === "reseller") {
-    renderResellerData();
-  }
+  renderProductsAdminTable();
   alert("Product updated.");
 }
 
@@ -586,6 +593,8 @@ function init() {
   } else if (page === "admin-products") {
     renderProductsAdminTable();
     document.getElementById("productForm").addEventListener("submit", (e) => createProduct(e).catch((err) => alert(err.message || "Unable to upload.")));
+    document.getElementById("editProductForm").addEventListener("submit", updateProduct);
+    document.getElementById("cancelEditProductBtn").addEventListener("click", closeEditProductModal);
     const fileInput = document.getElementById("productImageFile");
     fileInput.addEventListener("change", () => {
       const node = document.getElementById("uploadFileName");

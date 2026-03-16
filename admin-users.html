@@ -35,11 +35,16 @@
         </form>
       </article>
       <article class="card">
-        <h3>Load Coins to Reseller Wallet</h3>
+        <h3>Edit Reseller Coins</h3>
         <form id="walletForm" class="stack">
           <select id="walletUser" required></select>
-          <input type="number" id="coinAmount" min="1" placeholder="Coins to add" required />
-          <button type="submit">Upload Coins</button>
+          <select id="coinMode" required>
+            <option value="add">Add coins</option>
+            <option value="remove">Remove coins</option>
+            <option value="set">Set exact balance</option>
+          </select>
+          <input type="number" id="coinAmount" min="0" placeholder="Coin amount" required />
+          <button type="submit">Update Coins</button>
         </form>
       </article>
     </section>

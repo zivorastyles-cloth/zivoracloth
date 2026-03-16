@@ -36,6 +36,12 @@
           <option value="men">Men's Wear</option>
           <option value="jewellery">Jewellery</option>
         </select>
+        <select id="productBadge">
+          <option value="">No badge</option>
+          <option value="trending">Trending</option>
+          <option value="best-seller">Best Seller</option>
+          <option value="new-arrival">New Arrival</option>
+        </select>
         <input type="number" id="productPrice" min="1" placeholder="Coin price" required />
         <input type="text" id="productDetails" placeholder="Short details" required />
         <label class="file-label" for="productImageFile">Product image from computer</label>
@@ -47,8 +53,36 @@
     </section>
 
     <section class="card">
-      <h3>Products (Delete Products)</h3>
+      <h3>Products (Edit / Delete)</h3>
       <div id="productsTableWrap"></div>
+    </section>
+
+    <section class="card hidden" id="editProductPanel">
+      <h3>Edit Product Details</h3>
+      <form id="editProductForm" class="stack">
+        <input type="hidden" id="editProductId" />
+        <input type="text" id="editProductName" placeholder="Product name" required />
+        <select id="editProductCategory" required>
+          <option value="">Select category</option>
+          <option value="kids">Kids Wear</option>
+          <option value="women">Women's Wear</option>
+          <option value="men">Men's Wear</option>
+          <option value="jewellery">Jewellery</option>
+        </select>
+        <select id="editProductBadge">
+          <option value="">No badge</option>
+          <option value="trending">Trending</option>
+          <option value="best-seller">Best Seller</option>
+          <option value="new-arrival">New Arrival</option>
+        </select>
+        <input type="number" id="editProductPrice" min="1" placeholder="Coin price" required />
+        <input type="text" id="editProductDetails" placeholder="Short details" required />
+        <input type="url" id="editProductImage" placeholder="Product image URL" />
+        <div class="row">
+          <button type="submit">Save Product Changes</button>
+          <button type="button" id="cancelEditProductBtn" class="secondary">Cancel</button>
+        </div>
+      </form>
     </section>
   </main>
 
