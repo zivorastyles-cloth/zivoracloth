@@ -44,10 +44,10 @@
         </select>
         <input type="number" id="productPrice" min="1" placeholder="Coin price" required />
         <input type="text" id="productDetails" placeholder="Short details" required />
-        <label class="file-label" for="productImageFile">Product image from computer</label>
-        <input type="file" id="productImageFile" accept="image/*" />
-        <p id="uploadFileName" class="muted small-text">No file selected (you can still use image URL)</p>
-        <input type="url" id="productImage" placeholder="Fallback image URL (optional)" />
+        <label class="file-label" for="productImageFile">Product images from computer (3-4 files)</label>
+        <input type="file" id="productImageFile" accept="image/*" multiple />
+        <p id="uploadFileName" class="muted small-text">No files selected (add 3-4 images)</p>
+        <textarea id="productImage" placeholder="Or paste image URLs (one per line or comma separated, total 3-4)" rows="3"></textarea>
         <button type="submit">Add Product</button>
       </form>
     </section>
@@ -77,7 +77,7 @@
         </select>
         <input type="number" id="editProductPrice" min="1" placeholder="Coin price" required />
         <input type="text" id="editProductDetails" placeholder="Short details" required />
-        <input type="url" id="editProductImage" placeholder="Product image URL" />
+        <textarea id="editProductImage" placeholder="Product image URLs (one per line or comma separated, keep 3-4)" rows="4"></textarea>
         <div class="row">
           <button type="submit">Save Product Changes</button>
           <button type="button" id="cancelEditProductBtn" class="secondary">Cancel</button>

@@ -1,5 +1,5 @@
-const STORAGE_KEY = "zivora_store_data_v4";
-const LEGACY_STORAGE_KEYS = ["zivora_store_data_v3", "zivora_store_data_v2"];
+const STORAGE_KEY = "zivora_store_data_v5";
+const LEGACY_STORAGE_KEYS = ["zivora_store_data_v4", "zivora_store_data_v3", "zivora_store_data_v2"];
 const SESSION_USER_KEY = "zivora_current_user";
 const SESSION_ADMIN_GATE = "zivora_admin_gate_unlocked";
 
@@ -19,6 +19,8 @@ const BADGE_LABELS = {
 
 const fallbackImage =
   "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=60";
+const MAX_PRODUCT_IMAGES = 4;
+const MIN_PRODUCT_IMAGES = 3;
 
 const defaultData = {
   settings: { adminGatePasskey: "zivora-admin-gate" },
@@ -69,12 +71,36 @@ function migrateData(data) {
   if (!Array.isArray(migrated.users)) migrated.users = structuredClone(defaultData.users);
   migrated.users = migrated.users.map((u) => ({ ...u, wallet: Number.isFinite(Number(u.wallet)) ? Number(u.wallet) : 0 }));
   if (!Array.isArray(migrated.products)) migrated.products = [];
-  migrated.products = migrated.products.map((p) => ({ ...p, image: p.image || fallbackImage }));
+  migrated.products = migrated.products.map((p) => {
+    const images = normalizeProductImages(p);
+    return { ...p, image: images[0], images };
+  });
   if (!migrated.nextProductId) migrated.nextProductId = migrated.products.reduce((m, p) => Math.max(m, p.id || 0), 0) + 1;
   if (!migrated.carts) migrated.carts = {};
   if (!migrated.purchases) migrated.purchases = {};
   if (!migrated.tracking) migrated.tracking = {};
   return migrated;
+}
+
+
+function normalizeProductImages(product) {
+  const rawImages = Array.isArray(product?.images) ? product.images : [product?.image];
+  const cleaned = rawImages
+    .map((img) => String(img || "").trim())
+    .filter(Boolean)
+    .slice(0, MAX_PRODUCT_IMAGES);
+  return cleaned.length ? cleaned : [fallbackImage];
+}
+
+function getPrimaryProductImage(product) {
+  return normalizeProductImages(product)[0] || fallbackImage;
+}
+
+function parseImageUrlsInput(inputValue) {
+  return String(inputValue || "")
+    .split(/\n|,/)
+    .map((url) => url.trim())
+    .filter(Boolean);
 }
 
 function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }
@@ -247,7 +273,7 @@ function renderCatalog() {
   products.forEach((p) => {
     const item = document.createElement("div");
     item.className = "product-item";
-    item.innerHTML = `<img src="${p.image}" alt="${p.name}" loading="lazy" /><strong>${p.name}</strong><small>${p.details}</small><p>${p.price} coins • ${CATEGORY_LABELS[p.category] || p.category}</p><button data-product-id="${p.id}">Add to Cart</button>`;
+    item.innerHTML = `<img src="${getPrimaryProductImage(p)}" alt="${p.name}" loading="lazy" /><strong>${p.name}</strong><small>${p.details}</small><p>${p.price} coins • ${CATEGORY_LABELS[p.category] || p.category}</p><button data-product-id="${p.id}">Add to Cart</button>`;
     item.querySelector("button").addEventListener("click", () => {
       getUserCart(userId).push(p.id);
       saveData();
@@ -331,7 +357,7 @@ function renderPurchaseRecords(user) {
   const box = document.getElementById("purchaseRecords");
   if (!box) return;
   const records = store.purchases[user.id] || [];
-  box.innerHTML = records.length ? records.slice().reverse().map((r) => `<div class="record"><strong>${r.orderId}</strong>${r.items.map((it) => `<div class="purchase-item"><img src="${it.image || fallbackImage}" alt="${it.name}" /><span>${it.name}</span></div>`).join("")}<small>${r.purchasedAt}</small><div>Total: ${r.total} coins</div></div>`).join("") : '<p class="muted">No purchases yet.</p>';
+  box.innerHTML = records.length ? records.slice().reverse().map((r) => `<div class="record"><strong>${r.orderId}</strong>${r.items.map((it) => `<div class="purchase-item"><img src="${getPrimaryProductImage(it)}" alt="${it.name}" /><span>${it.name}</span></div>`).join("")}<small>${r.purchasedAt}</small><div>Total: ${r.total} coins</div></div>`).join("") : '<p class="muted">No purchases yet.</p>';
 }
 
 function renderTrackingRecords(user) {
@@ -359,8 +385,8 @@ function renderProductsAdminTable() {
   const wrap = document.getElementById("productsTableWrap");
   if (!wrap) return;
   if (!store.products.length) return (wrap.innerHTML = '<p class="muted">No products available.</p>');
-  const rows = store.products.map((p) => `<tr><td>${p.id}</td><td>${p.name}</td><td>${CATEGORY_LABELS[p.category] || p.category}</td><td>${p.price}</td><td>${p.details}</td><td>${BADGE_LABELS[p.badge] || "-"}</td><td><div class="row"><button class="small" data-edit-product="${p.id}">Edit</button><button class="danger small" data-delete-product="${p.id}">Delete</button></div></td></tr>`).join("");
-  wrap.innerHTML = `<table class="table"><thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price (coins)</th><th>Details</th><th>Badge</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table>`;
+  const rows = store.products.map((p) => `<tr><td>${p.id}</td><td>${p.name}</td><td>${CATEGORY_LABELS[p.category] || p.category}</td><td>${p.price}</td><td>${p.details}</td><td>${normalizeProductImages(p).length}</td><td>${BADGE_LABELS[p.badge] || "-"}</td><td><div class="row"><button class="small" data-edit-product="${p.id}">Edit</button><button class="danger small" data-delete-product="${p.id}">Delete</button></div></td></tr>`).join("");
+  wrap.innerHTML = `<table class="table"><thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price (coins)</th><th>Details</th><th>Images</th><th>Badge</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table>`;
   wrap.querySelectorAll("[data-edit-product]").forEach((b) => b.addEventListener("click", () => openEditProductModal(Number(b.getAttribute("data-edit-product")))));
   wrap.querySelectorAll("[data-delete-product]").forEach((b) => b.addEventListener("click", () => deleteProduct(Number(b.getAttribute("data-delete-product")))));
 }
@@ -425,18 +451,23 @@ async function createProduct(event) {
   const badge = document.getElementById("productBadge").value;
   const price = Number(document.getElementById("productPrice").value);
   const details = document.getElementById("productDetails").value.trim();
-  const imageUrl = document.getElementById("productImage").value.trim();
+  const imageUrls = parseImageUrlsInput(document.getElementById("productImage").value);
   const fileInput = document.getElementById("productImageFile");
-  const imageFile = fileInput.files[0];
-  let image = imageUrl;
-  if (imageFile) image = await fileToDataUrl(imageFile);
-  if (!image) image = fallbackImage;
+  const selectedFiles = Array.from(fileInput.files || []);
+  const fileImages = await Promise.all(selectedFiles.slice(0, MAX_PRODUCT_IMAGES).map((file) => fileToDataUrl(file)));
+  const images = [...fileImages, ...imageUrls].slice(0, MAX_PRODUCT_IMAGES);
+
   if (!name || !category || !price || !details) return;
-  store.products.push({ id: store.nextProductId++, name, category, badge, price, details, image });
+  if (images.length < MIN_PRODUCT_IMAGES || images.length > MAX_PRODUCT_IMAGES) {
+    alert(`Please provide ${MIN_PRODUCT_IMAGES}-${MAX_PRODUCT_IMAGES} product images.`);
+    return;
+  }
+
+  store.products.push({ id: store.nextProductId++, name, category, badge, price, details, image: images[0], images });
   saveData();
   event.target.reset();
   const uploadText = document.getElementById("uploadFileName");
-  if (uploadText) uploadText.textContent = "No file selected (you can still use image URL)";
+  if (uploadText) uploadText.textContent = `No files selected (add ${MIN_PRODUCT_IMAGES}-${MAX_PRODUCT_IMAGES} images)`;
   renderProductsAdminTable();
 }
 
@@ -450,7 +481,7 @@ function openEditProductModal(productId) {
   document.getElementById("editProductBadge").value = product.badge || "";
   document.getElementById("editProductPrice").value = String(product.price);
   document.getElementById("editProductDetails").value = product.details;
-  document.getElementById("editProductImage").value = product.image;
+  document.getElementById("editProductImage").value = normalizeProductImages(product).join("\n");
   document.getElementById("editProductPanel").classList.remove("hidden");
 }
 
@@ -470,7 +501,7 @@ function updateProduct(event) {
   const badge = document.getElementById("editProductBadge").value;
   const price = Number(document.getElementById("editProductPrice").value);
   const details = document.getElementById("editProductDetails").value.trim();
-  const image = document.getElementById("editProductImage").value.trim() || fallbackImage;
+  const images = parseImageUrlsInput(document.getElementById("editProductImage").value).slice(0, MAX_PRODUCT_IMAGES);
 
   if (!name || !category || !price || !details) {
     alert("Please fill all required fields.");
@@ -482,7 +513,12 @@ function updateProduct(event) {
   product.badge = badge;
   product.price = price;
   product.details = details;
-  product.image = image;
+  if (images.length < MIN_PRODUCT_IMAGES || images.length > MAX_PRODUCT_IMAGES) {
+    alert(`Please keep ${MIN_PRODUCT_IMAGES}-${MAX_PRODUCT_IMAGES} image URLs (one per line or comma separated).`);
+    return;
+  }
+  product.images = images;
+  product.image = images[0];
 
   saveData();
   closeEditProductModal();
@@ -598,7 +634,8 @@ function init() {
     const fileInput = document.getElementById("productImageFile");
     fileInput.addEventListener("change", () => {
       const node = document.getElementById("uploadFileName");
-      node.textContent = fileInput.files[0] ? `Selected file: ${fileInput.files[0].name}` : "No file selected (you can still use image URL)";
+      const count = (fileInput.files || []).length;
+      node.textContent = count ? `Selected files: ${count}` : `No files selected (add ${MIN_PRODUCT_IMAGES}-${MAX_PRODUCT_IMAGES} images)`;
     });
   } else if (page === "admin-orders") {
     renderOrdersAdminTable();
