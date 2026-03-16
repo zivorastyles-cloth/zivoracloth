@@ -664,6 +664,8 @@ function checkout() {
   document.getElementById("savedAddressPreview").textContent =
     "Shipping details will be collected for the next order.";
   renderResellerData();
+  document.getElementById("shippingForm").reset();
+  renderAddressPreview(null);
   alert(`Checkout successful! Order ${orderId} created.`);
 }
 
