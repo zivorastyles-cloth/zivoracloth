@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zivora | Cart & Checkout</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="reseller-cart">
+  <header class="topbar">
+    <div class="brand-wrap">
+      <img src="assets/zivora-logo.svg" alt="Zivora Styles logo" class="brand-logo" />
+      <div>
+        <h1>Cart & Checkout</h1>
+        <p id="welcomeText">Reseller Store</p>
+      </div>
+    </div>
+    <nav class="market-nav">
+      <a class="nav-link" href="reseller-home.html">Home</a>
+      <a class="nav-link" href="reseller-wallet.html">Wallet</a>
+      <a class="nav-link" href="reseller-orders.html">Orders</a>
+      <a class="nav-link cart-pill active" href="reseller-cart.html">🛒 Cart <span id="navCartCount">0</span></a>
+      <button id="logoutBtn" class="secondary small">Logout</button>
+    </nav>
+  </header>
+
+  <main class="container cards two-cols">
+    <section class="panel">
+      <h2>Cart Summary</h2>
+      <p id="cartSummary">0 item(s) • 0 coins</p>
+      <div id="cartItems" class="records"></div>
+      <div class="row top-space">
+        <button id="checkoutBtn">Checkout (Pay with Coins)</button>
+        <button id="clearCartBtn" class="secondary">Clear Cart</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Shipping Address</h2>
+      <p class="muted">Address is captured for this checkout.</p>
+      <form id="shippingForm" class="grid-form">
+        <input type="text" id="shipName" required placeholder="Full name" />
+        <input type="tel" id="shipPhone" required placeholder="Phone number" />
+        <input type="text" id="shipLine" required placeholder="Address line" />
+        <input type="text" id="shipCity" required placeholder="City" />
+        <input type="text" id="shipState" required placeholder="State" />
+        <input type="text" id="shipPincode" required placeholder="Pincode" />
+        <button type="submit">Validate Address</button>
+      </form>
+      <p id="savedAddressPreview" class="muted">Shipping details will be collected during checkout for each order.</p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

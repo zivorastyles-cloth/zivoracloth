@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zivora Admin | Products</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="admin-products">
+  <header class="topbar">
+    <div class="brand-wrap">
+      <img src="assets/zivora-logo.svg" alt="Zivora Styles logo" class="brand-logo" />
+      <div>
+        <h1>Admin: Product Control</h1>
+        <p id="welcomeText">Admin Console</p>
+      </div>
+    </div>
+    <nav class="market-nav">
+      <a class="nav-link" href="admin-users.html">Users</a>
+      <a class="nav-link active" href="admin-products.html">Products</a>
+      <a class="nav-link" href="admin-orders.html">Orders</a>
+      <a class="nav-link" href="admin-security.html">Security</a>
+      <button id="logoutBtn" class="secondary small">Logout</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h3>Upload Product</h3>
+      <form id="productForm" class="stack">
+        <input type="text" id="productName" placeholder="Product name" required />
+        <select id="productCategory" required>
+          <option value="">Select category</option>
+          <option value="kids">Kids Wear</option>
+          <option value="women">Women's Wear</option>
+          <option value="men">Men's Wear</option>
+          <option value="jewellery">Jewellery</option>
+        </select>
+        <input type="number" id="productPrice" min="1" placeholder="Coin price" required />
+        <input type="text" id="productDetails" placeholder="Short details" required />
+        <label class="file-label" for="productImageFile">Product image from computer</label>
+        <input type="file" id="productImageFile" accept="image/*" />
+        <p id="uploadFileName" class="muted small-text">No file selected (you can still use image URL)</p>
+        <input type="url" id="productImage" placeholder="Fallback image URL (optional)" />
+        <button type="submit">Add Product</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h3>Products (Delete Products)</h3>
+      <div id="productsTableWrap"></div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
