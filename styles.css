@@ -1,5 +1,5 @@
 :root {
-  --bg: #f4f5f7;
+  --bg: #f5f7ff;
   --panel: #ffffff;
   --text: #1f2430;
   --muted: #6d7585;
@@ -15,7 +15,7 @@ body {
   margin: 0;
   font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
   color: var(--text);
-  background: var(--bg);
+  background: radial-gradient(circle at top right, #ffe6f0 0%, #f7f8ff 36%, #f4f7ff 100%);
 }
 
 .topbar {
@@ -24,8 +24,9 @@ body {
   align-items: center;
   gap: 1rem;
   padding: 0.9rem 1.2rem;
-  background: var(--panel);
+  background: rgba(255, 255, 255, 0.92);
   border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
   position: sticky;
   top: 0;
   z-index: 40;
@@ -50,7 +51,9 @@ h2, h3, p { margin-top: 0; }
   color: #2f3a56;
   font-weight: 600;
   background: #f9fbff;
+  transition: all .2s ease;
 }
+.nav-link:hover { transform: translateY(-1px); border-color: #d4dbee; box-shadow: 0 8px 20px rgba(34, 53, 109, 0.08); }
 .nav-link.active { background: var(--primary-soft); color: var(--primary); border-color: #ffc7d7; }
 .cart-pill { background: #222; color: #fff; border-color: #222; }
 
@@ -59,7 +62,19 @@ h2, h3, p { margin-top: 0; }
   background: var(--panel); border: 1px solid var(--border);
   border-radius: 14px; padding: 1rem; box-shadow: 0 10px 28px rgba(20, 20, 43, 0.05);
 }
-.hero-banner { display: flex; justify-content: space-between; gap: 1rem; background: linear-gradient(120deg, #fff2f6, #ffffff); }
+.hero-banner {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  background: linear-gradient(120deg, #fff0f6, #ffffff 55%, #f2f5ff);
+  border-color: #ffd7e6;
+}
+.quick-highlights { margin-top: 1rem; }
+.feature-tile {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+  border-color: #e7ebf8;
+}
+.feature-tile h3 { margin-bottom: .4rem; }
 .eyebrow { color: var(--primary); font-size: 0.8rem; letter-spacing: .04em; text-transform: uppercase; font-weight: 700; }
 
 .cards { display: grid; gap: 1rem; margin-bottom: 1rem; }
@@ -71,6 +86,8 @@ input, select, button {
   font: inherit; padding: .66rem .75rem; border-radius: 10px; border: 1px solid #d7dbe7;
 }
 button { border: none; background: var(--primary); color: #fff; font-weight: 600; cursor: pointer; }
+button { transition: transform .15s ease, box-shadow .2s ease, filter .2s ease; }
+button:hover { transform: translateY(-1px); box-shadow: 0 10px 16px rgba(255, 63, 108, 0.23); }
 button.secondary { background: #eef1f8; color: #333c50; }
 button.danger { background: #d43f4b; }
 button.small { padding: .4rem .65rem; }
