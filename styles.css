@@ -302,6 +302,50 @@ button.small {
   height: 44px;
 }
 
+
+.product-image-wrap {
+  position: relative;
+}
+
+.product-badge {
+  position: absolute;
+  top: 0.45rem;
+  left: 0.45rem;
+  background: rgba(122, 79, 124, 0.92);
+  color: #fff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 18, 33, 0.55);
+  display: grid;
+  place-items: center;
+  z-index: 50;
+  padding: 1rem;
+}
+
+.modal-content {
+  width: min(540px, 100%);
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e1e6f4;
+  padding: 1rem;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
 @media (max-width: 680px) {
   .hero-banner {
     flex-direction: column;

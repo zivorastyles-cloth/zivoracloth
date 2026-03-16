@@ -1,5 +1,5 @@
-const STORAGE_KEY = "zivora_store_data_v4";
-const LEGACY_STORAGE_KEYS = ["zivora_store_data_v3", "zivora_store_data_v2"];
+const STORAGE_KEY = "zivora_store_data_v5";
+const LEGACY_STORAGE_KEYS = ["zivora_store_data_v4", "zivora_store_data_v3", "zivora_store_data_v2"];
 const ADMIN_PANEL_QUERY = "admin";
 const CATEGORY_LABELS = {
   all: "Home",
@@ -7,6 +7,12 @@ const CATEGORY_LABELS = {
   women: "Women's Wear",
   men: "Men's Wear",
   jewellery: "Jewellery",
+};
+
+const BADGE_LABELS = {
+  trending: "Trending",
+  "best-seller": "Best Seller",
+  "new-arrival": "New Arrival",
 };
 
 const fallbackImage =
@@ -27,6 +33,7 @@ const defaultData = {
       category: "kids",
       price: 250,
       details: "Soft cotton for daily wear",
+      badge: "trending",
       image:
         "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&w=800&q=60",
     },
@@ -36,6 +43,7 @@ const defaultData = {
       category: "women",
       price: 650,
       details: "Satin finish 2-piece",
+      badge: "best-seller",
       image:
         "https://images.unsplash.com/photo-1485462537746-965f33f7f6a7?auto=format&fit=crop&w=800&q=60",
     },
@@ -45,6 +53,7 @@ const defaultData = {
       category: "men",
       price: 390,
       details: "Breathable and regular fit",
+      badge: "new-arrival",
       image:
         "https://images.unsplash.com/photo-1527719327859-c6ce80353573?auto=format&fit=crop&w=800&q=60",
     },
@@ -134,6 +143,9 @@ function migrateData(data) {
   migrated.products = migrated.products.map((product) => ({
     ...product,
     image: product.image || fallbackImage,
+    badge: ["trending", "best-seller", "new-arrival"].includes(product.badge)
+      ? product.badge
+      : "",
   }));
 
   if (!migrated.nextProductId) {
@@ -310,14 +322,20 @@ function renderProductsAdminTable() {
         <td>${p.name}</td>
         <td>${CATEGORY_LABELS[p.category] || p.category}</td>
         <td>${p.price}</td>
-        <td><button class="danger small" data-delete-product="${p.id}">Delete</button></td>
+        <td>${BADGE_LABELS[p.badge] || "-"}</td>
+        <td>
+          <div class="row">
+            <button class="small" data-edit-product="${p.id}">Edit</button>
+            <button class="danger small" data-delete-product="${p.id}">Delete</button>
+          </div>
+        </td>
       </tr>`
     )
     .join("");
 
   wrap.innerHTML = `
     <table class="table">
-      <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price (coins)</th><th>Action</th></tr></thead>
+      <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price (coins)</th><th>Badge</th><th>Action</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   `;
@@ -325,6 +343,12 @@ function renderProductsAdminTable() {
   wrap.querySelectorAll("[data-delete-product]").forEach((button) => {
     button.addEventListener("click", () => {
       deleteProduct(Number(button.getAttribute("data-delete-product")));
+    });
+  });
+
+  wrap.querySelectorAll("[data-edit-product]").forEach((button) => {
+    button.addEventListener("click", () => {
+      openEditProductModal(Number(button.getAttribute("data-edit-product")));
     });
   });
 }
@@ -528,7 +552,10 @@ function renderCatalog() {
     const item = document.createElement("div");
     item.className = "product-item";
     item.innerHTML = `
-      <img src="${p.image}" alt="${p.name}" loading="lazy" />
+      <div class="product-image-wrap">
+        <img src="${p.image}" alt="${p.name}" loading="lazy" />
+        ${p.badge ? `<span class="product-badge">${BADGE_LABELS[p.badge] || p.badge}</span>` : ""}
+      </div>
       <strong>${p.name}</strong>
       <small>${p.details}</small>
       <p>${p.price} coins • ${CATEGORY_LABELS[p.category] || p.category}</p>
@@ -760,6 +787,7 @@ function addProduct(event) {
 async function createProduct(event) {
   const name = document.getElementById("productName").value.trim();
   const category = document.getElementById("productCategory").value;
+  const badge = document.getElementById("productBadge").value;
   const price = Number(document.getElementById("productPrice").value);
   const details = document.getElementById("productDetails").value.trim();
   const imageUrl = document.getElementById("productImage").value.trim();
@@ -782,6 +810,7 @@ async function createProduct(event) {
     category,
     price,
     details,
+    badge,
     image,
   });
 
@@ -789,6 +818,58 @@ async function createProduct(event) {
   event.target.reset();
   uploadFileName.textContent = "No file selected (you can still use image URL)";
   alert("Product uploaded.");
+}
+
+function openEditProductModal(productId) {
+  const product = store.products.find((p) => p.id === productId);
+  if (!product) return;
+
+  document.getElementById("editProductId").value = String(product.id);
+  document.getElementById("editProductName").value = product.name;
+  document.getElementById("editProductCategory").value = product.category;
+  document.getElementById("editProductBadge").value = product.badge || "";
+  document.getElementById("editProductPrice").value = String(product.price);
+  document.getElementById("editProductDetails").value = product.details;
+  document.getElementById("editProductImage").value = product.image;
+  document.getElementById("editProductModal").classList.remove("hidden");
+}
+
+function closeEditProductModal() {
+  document.getElementById("editProductModal").classList.add("hidden");
+}
+
+function updateProduct(event) {
+  event.preventDefault();
+  const productId = Number(document.getElementById("editProductId").value);
+  const product = store.products.find((p) => p.id === productId);
+  if (!product) return;
+
+  const name = document.getElementById("editProductName").value.trim();
+  const category = document.getElementById("editProductCategory").value;
+  const badge = document.getElementById("editProductBadge").value;
+  const price = Number(document.getElementById("editProductPrice").value);
+  const details = document.getElementById("editProductDetails").value.trim();
+  const image = document.getElementById("editProductImage").value.trim() || fallbackImage;
+
+  if (!name || !category || !price || !details) {
+    alert("Please fill all required fields.");
+    return;
+  }
+
+  product.name = name;
+  product.category = category;
+  product.badge = badge;
+  product.price = price;
+  product.details = details;
+  product.image = image;
+
+  saveData();
+  closeEditProductModal();
+  renderAdminData();
+  if (currentUser?.role === "reseller") {
+    renderResellerData();
+  }
+  alert("Product updated.");
 }
 
 function fileToDataUrl(file) {
@@ -868,6 +949,8 @@ function bindEvents() {
   document.getElementById("changeGatePasswordForm").addEventListener("submit", changeGatePasskey);
   document.getElementById("shippingForm").addEventListener("submit", saveShippingAddress);
   productImageFileInput.addEventListener("change", updateSelectedFileName);
+  document.getElementById("editProductForm").addEventListener("submit", updateProduct);
+  document.getElementById("closeEditProductModal").addEventListener("click", closeEditProductModal);
 
   window.addEventListener("storage", () => {
     if (currentUser && currentUser.role === "reseller") {

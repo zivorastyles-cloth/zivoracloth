@@ -89,6 +89,12 @@
                 <option value="men">Men's Wear</option>
                 <option value="jewellery">Jewellery</option>
               </select>
+              <select id="productBadge">
+                <option value="">No badge</option>
+                <option value="trending">Trending</option>
+                <option value="best-seller">Best Seller</option>
+                <option value="new-arrival">New Arrival</option>
+              </select>
               <input type="number" id="productPrice" min="1" placeholder="Coin price" required />
               <input type="text" id="productDetails" placeholder="Short details" required />
               <label class="file-label" for="productImageFile">Product image from computer</label>
@@ -129,6 +135,35 @@
         <div class="card">
           <h3>Products (Delete Products)</h3>
           <div id="productsTableWrap"></div>
+        </div>
+
+        <div id="editProductModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="editProductTitle">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 id="editProductTitle">Edit Product</h3>
+              <button id="closeEditProductModal" class="secondary small" type="button">Close</button>
+            </div>
+            <form id="editProductForm" class="stack">
+              <input type="hidden" id="editProductId" />
+              <input type="text" id="editProductName" placeholder="Product name" required />
+              <select id="editProductCategory" required>
+                <option value="kids">Kids Wear</option>
+                <option value="women">Women's Wear</option>
+                <option value="men">Men's Wear</option>
+                <option value="jewellery">Jewellery</option>
+              </select>
+              <select id="editProductBadge">
+                <option value="">No badge</option>
+                <option value="trending">Trending</option>
+                <option value="best-seller">Best Seller</option>
+                <option value="new-arrival">New Arrival</option>
+              </select>
+              <input type="number" id="editProductPrice" min="1" placeholder="Coin price" required />
+              <input type="text" id="editProductDetails" placeholder="Short details" required />
+              <input type="url" id="editProductImage" placeholder="Image URL" />
+              <button type="submit">Save Changes</button>
+            </form>
+          </div>
         </div>
 
         <div class="card">
