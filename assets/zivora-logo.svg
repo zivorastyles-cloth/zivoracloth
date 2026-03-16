@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-labelledby="title desc">
+  <title id="title">Zivora Styles Logo</title>
+  <desc id="desc">Circular pink and gold brand logo with Zivora Styles text.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="45%" r="58%">
+      <stop offset="0%" stop-color="#ffeef4" />
+      <stop offset="100%" stop-color="#f7d7e4" />
+    </radialGradient>
+  </defs>
+  <circle cx="110" cy="110" r="104" fill="#f4e8d5" stroke="#b8a06d" stroke-width="2"/>
+  <circle cx="110" cy="110" r="92" fill="url(#bg)" stroke="#d8c18f" stroke-width="1.5"/>
+  <path d="M58 68h104" stroke="#b39a68" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M76 68c8-20 60-20 68 0" fill="none" stroke="#b39a68" stroke-width="2"/>
+  <path d="M108 48c0-4 4-8 8-8" fill="none" stroke="#b39a68" stroke-width="2"/>
+  <path d="M118 56l-8 12h16z" fill="none" stroke="#b39a68" stroke-width="2"/>
+  <text x="110" y="130" text-anchor="middle" font-family="Brush Script MT, Segoe Script, cursive" font-size="66" fill="#7f6034">Zivora</text>
+  <text x="110" y="160" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" letter-spacing="6" font-size="20" fill="#6f5b39">STYLES</text>
+</svg>

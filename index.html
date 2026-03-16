@@ -8,14 +8,25 @@
 </head>
 <body>
   <header class="topbar">
-    <div>
-      <h1>Zivora Cloth Dealer Store</h1>
-      <p>Kids Wear • Women's Wear • Men's Wear • Jewellery</p>
+    <div class="brand-wrap">
+      <img src="assets/zivora-logo.svg" alt="Zivora Styles logo" class="brand-logo" />
+      <div>
+        <h1>Zivora Cloth Dealer Store</h1>
+        <p>Kids Wear • Women's Wear • Men's Wear • Jewellery</p>
+      </div>
     </div>
     <span class="chip">B2B Reseller Portal</span>
   </header>
 
   <main class="container">
+    <section class="hero-banner panel">
+      <div>
+        <p class="eyebrow">Inspired by leading ecommerce storefronts</p>
+        <h2>Fast catalog browsing, clearer cards, and smoother reseller checkout.</h2>
+      </div>
+      <p class="muted">Admins can now upload product photos directly from computer (no image URL required).</p>
+    </section>
+
     <section id="adminAccessSection" class="panel hidden">
       <h2>Admin Entry Gate</h2>
       <p class="muted">Admin panel is hidden behind a private URL and passkey.</p>
@@ -80,7 +91,10 @@
               </select>
               <input type="number" id="productPrice" min="1" placeholder="Coin price" required />
               <input type="text" id="productDetails" placeholder="Short details" required />
-              <input type="url" id="productImage" placeholder="Image URL (https://...)" required />
+              <label class="file-label" for="productImageFile">Product image from computer</label>
+              <input type="file" id="productImageFile" accept="image/*" />
+              <p id="uploadFileName" class="muted small-text">No file selected (you can still use image URL)</p>
+              <input type="url" id="productImage" placeholder="Fallback image URL (optional)" />
               <button type="submit">Add Product</button>
             </form>
           </article>
@@ -133,19 +147,50 @@
           </article>
         </div>
 
-        <h3>Product Catalog</h3>
-        <p class="muted">Use navbar category pages for quicker browsing.</p>
-        <h4 id="catalogSectionTitle" class="catalog-title"></h4>
-        <div id="catalog" class="catalog-grid"></div>
+        <article class="card">
+          <h3>Shipping Address (required for checkout)</h3>
+          <form id="shippingForm" class="grid-form">
+            <label>
+              Full name
+              <input type="text" id="shipName" required placeholder="Receiver full name" />
+            </label>
+            <label>
+              Phone number
+              <input type="tel" id="shipPhone" required placeholder="10-digit phone" />
+            </label>
+            <label>
+              Address line
+              <input type="text" id="shipLine" required placeholder="House no, street" />
+            </label>
+            <label>
+              City
+              <input type="text" id="shipCity" required placeholder="City" />
+            </label>
+            <label>
+              State
+              <input type="text" id="shipState" required placeholder="State" />
+            </label>
+            <label>
+              Pincode
+              <input type="text" id="shipPincode" required placeholder="6-digit pincode" />
+            </label>
+            <button type="submit">Save Address</button>
+          </form>
+        </article>
+
+        <article class="card">
+          <h3 id="catalogSectionTitle">Home: All categories</h3>
+          <div id="catalog" class="catalog-grid"></div>
+        </article>
 
         <div class="cards two-cols">
           <article class="card">
-            <h3>Purchase Records</h3>
-            <div id="purchaseRecords"></div>
+            <h3>Purchase History</h3>
+            <div id="purchaseRecords" class="records"></div>
           </article>
           <article class="card">
-            <h3>Track Orders & Location</h3>
-            <div id="trackingRecords"></div>
+            <h3>Order Tracking</h3>
+            <div id="trackingRecords" class="records"></div>
           </article>
         </div>
       </section>
