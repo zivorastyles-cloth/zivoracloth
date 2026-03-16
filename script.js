@@ -1,6 +1,8 @@
-const STORAGE_KEY = "zivora_store_data_v2";
+const STORAGE_KEY = "zivora_store_data_v3";
+const LEGACY_STORAGE_KEYS = ["zivora_store_data_v2"];
 const ADMIN_PANEL_QUERY = "admin";
 const CATEGORY_LABELS = {
+  all: "Home",
   kids: "Kids Wear",
   women: "Women's Wear",
   men: "Men's Wear",
@@ -68,6 +70,7 @@ const defaultData = {
   carts: {},
   purchases: {},
   tracking: {},
+  shippingAddresses: {},
   nextProductId: 6,
 };
 
@@ -87,27 +90,44 @@ const adminGateMessage = document.getElementById("adminGateMessage");
 const loginHint = document.getElementById("loginHint");
 
 function loadData() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData));
-    return structuredClone(defaultData);
+  const primaryRaw = localStorage.getItem(STORAGE_KEY);
+  if (primaryRaw) {
+    try {
+      return migrateData(JSON.parse(primaryRaw));
+    } catch {
+      localStorage.removeItem(STORAGE_KEY);
+    }
   }
-  try {
-    const data = JSON.parse(raw);
-    return migrateData(data);
-  } catch {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData));
-    return structuredClone(defaultData);
+
+  for (const key of LEGACY_STORAGE_KEYS) {
+    const raw = localStorage.getItem(key);
+    if (!raw) continue;
+    try {
+      const migrated = migrateData(JSON.parse(raw));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+      return migrated;
+    } catch {
+      localStorage.removeItem(key);
+    }
   }
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData));
+  return structuredClone(defaultData);
 }
 
 function migrateData(data) {
-  const migrated = structuredClone(data);
+  const migrated = structuredClone(data || {});
 
   if (!migrated.settings) migrated.settings = {};
   if (!migrated.settings.adminGatePasskey) {
     migrated.settings.adminGatePasskey = defaultData.settings.adminGatePasskey;
   }
+
+  if (!Array.isArray(migrated.users)) migrated.users = structuredClone(defaultData.users);
+  migrated.users = migrated.users.map((user) => ({
+    ...user,
+    wallet: Number.isFinite(Number(user.wallet)) ? Number(user.wallet) : 0,
+  }));
 
   if (!Array.isArray(migrated.products)) migrated.products = [];
   migrated.products = migrated.products.map((product) => ({
@@ -122,12 +142,17 @@ function migrateData(data) {
   if (!migrated.carts) migrated.carts = {};
   if (!migrated.purchases) migrated.purchases = {};
   if (!migrated.tracking) migrated.tracking = {};
+  if (!migrated.shippingAddresses) migrated.shippingAddresses = {};
 
   return migrated;
 }
 
 function saveData() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+}
+
+function refreshStore() {
+  store = loadData();
 }
 
 function getUserById(userId) {
@@ -163,6 +188,7 @@ function unlockAdminGate(event) {
 
 function login(event) {
   event.preventDefault();
+  refreshStore();
   const id = document.getElementById("userId").value.trim();
   const password = document.getElementById("password").value;
   const user = getUserById(id);
@@ -206,6 +232,7 @@ function logout() {
   appSection.classList.add("hidden");
   adminPanel.classList.add("hidden");
   resellerPanel.classList.add("hidden");
+  document.getElementById("resellerNavLinks").classList.add("hidden");
   loginSection.classList.remove("hidden");
   updateLoginModeUI();
 }
@@ -213,12 +240,13 @@ function logout() {
 function renderRolePanel() {
   if (!currentUser) return;
   if (currentUser.role === "admin") {
+    document.getElementById("resellerNavLinks").classList.add("hidden");
     adminPanel.classList.remove("hidden");
     resellerPanel.classList.add("hidden");
     renderAdminData();
   } else {
-    resellerPanel.classList.remove("hidden");
     adminPanel.classList.add("hidden");
+    resellerPanel.classList.remove("hidden");
     renderResellerData();
   }
 }
@@ -265,37 +293,43 @@ function renderAdminData() {
   });
 }
 
-function renderResellerData() {
-  const user = getUserById(currentUser.id);
-  currentUser = user;
-  document.getElementById("walletBalance").textContent = `${user.wallet} 🪙`;
-  renderMaterialTabs();
-  renderCatalog();
-  renderCartSummary();
-  renderPurchaseRecords();
-  renderTrackingRecords();
-}
-
-function renderMaterialTabs() {
-  const tabsWrap = document.getElementById("materialTabs");
-  const categories = [{ key: "all", label: "All Materials" }].concat(
-    Object.entries(CATEGORY_LABELS).map(([key, label]) => ({ key, label }))
-  );
-
-  tabsWrap.innerHTML = categories
+function renderResellerNav() {
+  const nav = document.getElementById("resellerNavLinks");
+  const categories = Object.entries(CATEGORY_LABELS);
+  nav.innerHTML = categories
     .map(
-      ({ key, label }) =>
-        `<button class="material-tab ${selectedMaterial === key ? "active" : ""}" data-material="${key}">${label}</button>`
+      ([key, label]) =>
+        `<button class="category-link ${selectedMaterial === key ? "active" : ""}" data-category-link="${key}">${label}</button>`
     )
     .join("");
 
-  tabsWrap.querySelectorAll("[data-material]").forEach((button) => {
+  nav.classList.remove("hidden");
+  nav.querySelectorAll("[data-category-link]").forEach((button) => {
     button.addEventListener("click", () => {
-      selectedMaterial = button.getAttribute("data-material");
-      renderMaterialTabs();
+      selectedMaterial = button.getAttribute("data-category-link");
+      renderResellerNav();
       renderCatalog();
     });
   });
+}
+
+function renderResellerData() {
+  refreshStore();
+  const user = getUserById(currentUser.id);
+  if (!user) {
+    alert("Your user account is no longer available.");
+    logout();
+    return;
+  }
+  currentUser = user;
+  welcomeText.textContent = `Logged in as ${user.id} (${user.role})`;
+  document.getElementById("walletBalance").textContent = `${user.wallet} 🪙`;
+  renderResellerNav();
+  renderCatalog();
+  renderCartSummary();
+  renderShippingAddress();
+  renderPurchaseRecords();
+  renderTrackingRecords();
 }
 
 function renderCatalog() {
@@ -308,8 +342,8 @@ function renderCatalog() {
 
   title.textContent =
     selectedMaterial === "all"
-      ? "Showing all material categories"
-      : `Showing: ${CATEGORY_LABELS[selectedMaterial] || "Selected Material"}`;
+      ? "Home: All categories"
+      : `Category page: ${CATEGORY_LABELS[selectedMaterial] || "Selected Material"}`;
 
   if (!products.length) {
     catalog.innerHTML = '<div class="product-item muted">No products added in this section yet.</div>';
@@ -357,10 +391,73 @@ function clearCart() {
   renderCartSummary();
 }
 
+function renderShippingAddress() {
+  const address = store.shippingAddresses[currentUser.id];
+  const preview = document.getElementById("savedAddressPreview");
+  const form = document.getElementById("shippingForm");
+
+  if (!address) {
+    preview.textContent = "No shipping address saved yet.";
+    form.reset();
+    return;
+  }
+
+  preview.textContent = `${address.name}, ${address.line}, ${address.city}, ${address.state} - ${address.pincode} (${address.phone})`;
+  document.getElementById("shipName").value = address.name;
+  document.getElementById("shipPhone").value = address.phone;
+  document.getElementById("shipLine").value = address.line;
+  document.getElementById("shipCity").value = address.city;
+  document.getElementById("shipState").value = address.state;
+  document.getElementById("shipPincode").value = address.pincode;
+}
+
+function saveShippingAddress(event) {
+  event.preventDefault();
+  const name = document.getElementById("shipName").value.trim();
+  const phone = document.getElementById("shipPhone").value.trim();
+  const line = document.getElementById("shipLine").value.trim();
+  const city = document.getElementById("shipCity").value.trim();
+  const state = document.getElementById("shipState").value.trim();
+  const pincode = document.getElementById("shipPincode").value.trim();
+
+  if (!name || !phone || !line || !city || !state || !pincode) {
+    alert("Please fill complete shipping address.");
+    return;
+  }
+
+  if (!/^\d{10}$/.test(phone.replace(/\D/g, ""))) {
+    alert("Phone number must be 10 digits.");
+    return;
+  }
+
+  if (!/^\d{6}$/.test(pincode)) {
+    alert("Pincode must be 6 digits.");
+    return;
+  }
+
+  store.shippingAddresses[currentUser.id] = {
+    name,
+    phone: phone.replace(/\D/g, ""),
+    line,
+    city,
+    state,
+    pincode,
+  };
+  saveData();
+  renderShippingAddress();
+  alert("Shipping address saved.");
+}
+
 function checkout() {
   const cart = getUserCart(currentUser.id);
   if (!cart.length) {
     alert("Cart is empty.");
+    return;
+  }
+
+  const address = store.shippingAddresses[currentUser.id];
+  if (!address) {
+    alert("Please save shipping address before checkout.");
     return;
   }
 
@@ -387,12 +484,13 @@ function checkout() {
     items,
     total,
     purchasedAt,
+    shippingAddress: address,
   });
 
   store.tracking[currentUser.id].push({
     orderId,
-    status: "Dispatched",
-    location: "Dealer Warehouse",
+    status: "Order Placed",
+    location: `${address.city}, ${address.state}`,
     updatedAt: purchasedAt,
   });
 
@@ -478,6 +576,7 @@ function deleteResellerUser(userId) {
   delete store.carts[userId];
   delete store.purchases[userId];
   delete store.tracking[userId];
+  delete store.shippingAddresses[userId];
   saveData();
   renderAdminData();
 }
@@ -510,7 +609,7 @@ function addCoins(event) {
   event.preventDefault();
   const userId = document.getElementById("walletUser").value;
   const amount = Number(document.getElementById("coinAmount").value);
-  if (!userId || !amount) return;
+  if (!userId || !amount || amount < 1) return;
 
   const user = getUserById(userId);
   if (!user || user.role !== "reseller") return;
@@ -563,6 +662,13 @@ function bindEvents() {
   document.getElementById("clearCartBtn").addEventListener("click", clearCart);
   document.getElementById("changeAdminPasswordForm").addEventListener("submit", changeAdminPassword);
   document.getElementById("changeGatePasswordForm").addEventListener("submit", changeGatePasskey);
+  document.getElementById("shippingForm").addEventListener("submit", saveShippingAddress);
+
+  window.addEventListener("storage", () => {
+    if (currentUser && currentUser.role === "reseller") {
+      renderResellerData();
+    }
+  });
 }
 
 bindEvents();
