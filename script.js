@@ -40,6 +40,8 @@ const defaultData = {
 
 let store = loadData();
 let selectedMaterial = "all";
+let catalogSearchTerm = "";
+let catalogSortMode = "featured";
 const page = document.body.dataset.page;
 
 function loadData() {
@@ -82,6 +84,21 @@ function getSessionUser() { return sessionStorage.getItem(SESSION_USER_KEY); }
 function setSessionUser(id) { sessionStorage.setItem(SESSION_USER_KEY, id); }
 function clearSession() { sessionStorage.removeItem(SESSION_USER_KEY); sessionStorage.removeItem(SESSION_ADMIN_GATE); }
 function isAdminGateUnlocked() { return sessionStorage.getItem(SESSION_ADMIN_GATE) === "1"; }
+
+
+function getHomePathForCurrentSession() {
+  refreshStore();
+  const user = getUserById(getSessionUser());
+  if (user?.role === "admin") return "admin-users.html";
+  if (user?.role === "reseller") return "reseller-home.html";
+  return "index.html";
+}
+
+function bindBrandHomeLink() {
+  const link = document.querySelector(".brand-home-link");
+  if (!link) return;
+  link.setAttribute("href", getHomePathForCurrentSession());
+}
 
 function requireRole(role) {
   refreshStore();
@@ -163,16 +180,53 @@ function renderResellerNav() {
   });
 }
 
+
+function bindCatalogControls() {
+  const search = document.getElementById("catalogSearch");
+  const sort = document.getElementById("catalogSort");
+  if (search) {
+    search.addEventListener("input", () => {
+      catalogSearchTerm = search.value.trim().toLowerCase();
+      renderCatalog();
+    });
+  }
+  if (sort) {
+    sort.addEventListener("change", () => {
+      catalogSortMode = sort.value;
+      renderCatalog();
+    });
+  }
+}
+
 function renderCatalog() {
   const catalog = document.getElementById("catalog");
   const title = document.getElementById("catalogSectionTitle");
+  const meta = document.getElementById("catalogMeta");
   if (!catalog || !title) return;
-  const products = selectedMaterial === "all" ? store.products : store.products.filter((p) => p.category === selectedMaterial);
+
+  const categoryProducts = selectedMaterial === "all"
+    ? store.products
+    : store.products.filter((p) => p.category === selectedMaterial);
+
+  const filteredProducts = categoryProducts.filter((p) => {
+    if (!catalogSearchTerm) return true;
+    const haystack = `${p.name} ${p.details} ${CATEGORY_LABELS[p.category] || p.category}`.toLowerCase();
+    return haystack.includes(catalogSearchTerm);
+  });
+
+  const products = filteredProducts.slice();
+  if (catalogSortMode === "price-low") products.sort((a, b) => a.price - b.price);
+  if (catalogSortMode === "price-high") products.sort((a, b) => b.price - a.price);
+  if (catalogSortMode === "name-az") products.sort((a, b) => a.name.localeCompare(b.name));
+
   title.textContent = selectedMaterial === "all" ? "Home: All categories" : `Category page: ${CATEGORY_LABELS[selectedMaterial] || "Selected"}`;
+  if (meta) meta.textContent = `Showing ${products.length} of ${categoryProducts.length} products`;
+
   if (!products.length) {
-    catalog.innerHTML = '<div class="product-item muted">No products in this category yet.</div>';
+    catalog.innerHTML = '<div class="product-item muted">No products match this filter. Try another search or category.</div>';
     return;
   }
+
   const userId = getSessionUser();
   catalog.innerHTML = "";
   products.forEach((p) => {
@@ -472,6 +526,7 @@ function changeGatePasskey(event) {
 }
 
 function init() {
+  bindBrandHomeLink();
   bindLogout();
   if (page === "login") {
     document.getElementById("loginForm").addEventListener("submit", (e) => loginUser(e, "reseller"));
@@ -488,6 +543,7 @@ function init() {
   if (!user) return;
 
   if (page === "reseller-home") {
+    bindCatalogControls();
     renderResellerNav();
     renderCatalog();
   } else if (page === "reseller-wallet") {

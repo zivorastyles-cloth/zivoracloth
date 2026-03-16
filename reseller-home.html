@@ -8,13 +8,13 @@
 </head>
 <body data-page="reseller-home">
   <header class="topbar">
-    <div class="brand-wrap">
+    <a class="brand-wrap brand-home-link" href="index.html" aria-label="Go to home page">
       <img src="assets/zivora-logo.svg" alt="Zivora Styles logo" class="brand-logo" />
       <div>
         <h1>Zivora Styles</h1>
         <p id="welcomeText">Reseller Store</p>
       </div>
-    </div>
+    </a>
     <nav class="market-nav">
       <a class="nav-link active" href="reseller-home.html">Home</a>
       <a class="nav-link" href="reseller-wallet.html">Wallet</a>
@@ -28,6 +28,22 @@
     <section class="panel">
       <h2 id="catalogSectionTitle">Home: All categories</h2>
       <div id="resellerNavLinks" class="reseller-nav-links"></div>
+      <div class="catalog-toolbar">
+        <label>
+          Search products
+          <input type="search" id="catalogSearch" placeholder="Search by name, detail or category" />
+        </label>
+        <label>
+          Sort by
+          <select id="catalogSort">
+            <option value="featured">Featured</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="name-az">Name: A to Z</option>
+          </select>
+        </label>
+      </div>
+      <p id="catalogMeta" class="muted small-text"></p>
       <div id="catalog" class="catalog-grid"></div>
     </section>
   </main>
