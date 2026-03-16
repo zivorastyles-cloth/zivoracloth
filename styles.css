@@ -127,3 +127,13 @@ button.small { padding: .4rem .65rem; }
   .topbar { align-items: flex-start; flex-direction: column; }
   .hero-banner { flex-direction: column; }
 }
+
+
+.admin-login-layout { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+.admin-entry-help { grid-column: 1 / -1; }
+.admin-entry-help code { background: #f2f4fb; border: 1px solid #e2e7f5; padding: .1rem .35rem; border-radius: 6px; }
+#adminLoginCard.locked { opacity: .7; border-style: dashed; }
+#adminLoginCard.locked button[type="submit"] { cursor: not-allowed; filter: grayscale(.2); }
+#adminGateStatus.success { color: var(--success); font-weight: 600; }
+.demo-credentials { display: none; margin-top: .6rem; }
+.demo-credentials.visible { display: block; }

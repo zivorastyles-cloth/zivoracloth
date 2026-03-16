@@ -21,8 +21,18 @@
   </header>
 
   <main class="container admin-login-layout">
+    <section class="panel admin-entry-help">
+      <p class="eyebrow">Trouble opening admin panel?</p>
+      <h2>Admin access is now one click away</h2>
+      <p class="muted">If you opened <code>?admin=1</code> on the reseller URL, you will now be auto-routed here.</p>
+      <div class="row top-space">
+        <button id="copyAdminLinkBtn" type="button" class="secondary small">Copy Admin URL</button>
+        <a class="nav-link" href="index.html">Back to Reseller Login</a>
+      </div>
+    </section>
+
     <section class="panel">
-      <h2>Admin Gate Passkey</h2>
+      <h2>Step 1: Unlock Admin Gate</h2>
       <form id="adminGateForm" class="grid-form">
         <label>
           Admin panel passkey
@@ -31,10 +41,11 @@
         <button type="submit">Unlock Admin Access</button>
       </form>
       <p id="adminGateMessage" class="message"></p>
+      <p id="adminGateStatus" class="muted small-text">Gate is locked. Submit the passkey first.</p>
     </section>
 
-    <section class="panel">
-      <h2>Admin Login</h2>
+    <section class="panel" id="adminLoginCard">
+      <h2>Step 2: Admin Login</h2>
       <form id="loginForm" class="grid-form">
         <label>
           Admin ID
@@ -47,7 +58,8 @@
         <button type="submit">Enter Dashboard</button>
       </form>
       <p id="loginMessage" class="message"></p>
-      <p class="muted small-text">Demo admin: <strong>admin</strong> / <strong>admin123</strong></p>
+      <button id="revealDemoCredentialsBtn" type="button" class="secondary small">Show Demo Credentials</button>
+      <p id="demoCredentials" class="muted small-text demo-credentials">Demo admin: <strong>admin</strong> / <strong>admin123</strong></p>
     </section>
   </main>
 
