@@ -32,6 +32,8 @@ body {
 }
 
 .brand-wrap { display: flex; align-items: center; gap: 0.8rem; }
+.brand-home-link { text-decoration: none; color: inherit; border-radius: 12px; padding: 0.2rem; transition: background .2s ease; }
+.brand-home-link:hover { background: #fff2f7; }
 .brand-logo {
   width: 58px; height: 58px; border-radius: 50%; object-fit: cover;
   border: 1px solid #ffd0dc; box-shadow: 0 8px 20px rgba(255, 63, 108, 0.18);
@@ -85,6 +87,7 @@ button.small { padding: .4rem .65rem; }
 .category-link { background: #eff3fb; color: #2f3a56; border: 1px solid #d8e0f0; }
 .category-link.active { background: var(--primary-soft); color: var(--primary); border-color: #ffc7d7; }
 
+.catalog-toolbar { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .75rem; margin-bottom: .5rem; }
 .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: .85rem; }
 .product-item {
   border: 1px solid #e6e9f4; border-radius: 12px; padding: .65rem; display: grid; gap: .4rem; background: #fff;
