@@ -390,37 +390,31 @@ function clearCart() {
   renderCartSummary();
 }
 
-function checkout() {
-  const cart = getUserCart(currentUser.id);
-  if (!cart.length) {
-    alert("Cart is empty.");
-    return;
-  }
-
-  const name = prompt("Enter receiver full name:", "")?.trim() || "";
-  const phoneRaw = prompt("Enter 10-digit phone number:", "")?.trim() || "";
-  const line = prompt("Enter address line:", "")?.trim() || "";
-  const city = prompt("Enter city:", "")?.trim() || "";
-  const state = prompt("Enter state:", "")?.trim() || "";
-  const pincode = prompt("Enter 6-digit pincode:", "")?.trim() || "";
+function getShippingAddressFromForm() {
+  const name = document.getElementById("shipName").value.trim();
+  const phoneRaw = document.getElementById("shipPhone").value.trim();
+  const line = document.getElementById("shipLine").value.trim();
+  const city = document.getElementById("shipCity").value.trim();
+  const state = document.getElementById("shipState").value.trim();
+  const pincode = document.getElementById("shipPincode").value.trim();
 
   if (!name || !phoneRaw || !line || !city || !state || !pincode) {
-    alert("Checkout cancelled. Please provide complete shipping details.");
-    return;
+    alert("Please fill complete shipping details before checkout.");
+    return null;
   }
 
   const phone = phoneRaw.replace(/\D/g, "");
   if (!/^\d{10}$/.test(phone)) {
     alert("Phone number must be 10 digits.");
-    return;
+    return null;
   }
 
   if (!/^\d{6}$/.test(pincode)) {
     alert("Pincode must be 6 digits.");
-    return;
+    return null;
   }
 
-  const address = {
+  return {
     name,
     phone,
     line,
@@ -428,6 +422,35 @@ function checkout() {
     state,
     pincode,
   };
+}
+
+function renderAddressPreview(address) {
+  const preview = document.getElementById("savedAddressPreview");
+  if (!address) {
+    preview.textContent = "Shipping details will be collected during checkout for each order.";
+    return;
+  }
+
+  preview.textContent = `Checkout address: ${address.name}, ${address.line}, ${address.city}, ${address.state} - ${address.pincode}, ${address.phone}`;
+}
+
+function saveShippingAddress(event) {
+  event.preventDefault();
+  const address = getShippingAddressFromForm();
+  if (!address) return;
+  renderAddressPreview(address);
+  alert("Shipping address ready. You can continue with checkout.");
+}
+
+function checkout() {
+  const cart = getUserCart(currentUser.id);
+  if (!cart.length) {
+    alert("Cart is empty.");
+    return;
+  }
+
+  const address = getShippingAddressFromForm();
+  if (!address) return;
 
   const items = cart.map((id) => store.products.find((p) => p.id === id)).filter(Boolean);
   const total = items.reduce((sum, item) => sum + item.price, 0);
@@ -464,6 +487,8 @@ function checkout() {
 
   saveData();
   renderResellerData();
+  document.getElementById("shippingForm").reset();
+  renderAddressPreview(null);
   alert(`Checkout successful! Order ${orderId} created.`);
 }
 
