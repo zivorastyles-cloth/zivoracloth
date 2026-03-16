@@ -21,6 +21,7 @@ const fallbackImage =
   "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=60";
 const MAX_PRODUCT_IMAGES = 4;
 const MIN_PRODUCT_IMAGES = 3;
+const MAX_IMAGE_UPLOAD_BYTES = 250 * 1024;
 
 const defaultData = {
   settings: { adminGatePasskey: "zivora-admin-gate" },
@@ -78,6 +79,7 @@ function migrateData(data) {
   if (!migrated.nextProductId) migrated.nextProductId = migrated.products.reduce((m, p) => Math.max(m, p.id || 0), 0) + 1;
   if (!migrated.carts) migrated.carts = {};
   if (!migrated.purchases) migrated.purchases = {};
+  migrated.purchases = normalizePurchases(migrated.purchases, migrated.products);
   if (!migrated.tracking) migrated.tracking = {};
   return migrated;
 }
@@ -103,7 +105,70 @@ function parseImageUrlsInput(inputValue) {
     .filter(Boolean);
 }
 
-function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }
+function toLineItems(items = [], products = store.products) {
+  const merged = new Map();
+  items.forEach((item) => {
+    const productId = Number(item?.id ?? item?.productId);
+    const hasProductId = Number.isFinite(productId);
+    const key = hasProductId ? `id:${productId}` : `name:${String(item?.name || "Unknown item")}`;
+    if (!merged.has(key)) {
+      merged.set(key, {
+        productId: hasProductId ? productId : null,
+        name: String(item?.name || "Unknown item"),
+        unitPrice: Number(item?.price ?? item?.unitPrice ?? 0) || 0,
+        quantity: 0,
+      });
+    }
+    merged.get(key).quantity += Number(item?.quantity || 1) || 1;
+  });
+
+  return Array.from(merged.values()).map((line) => {
+    if (!line.productId) return line;
+    const product = products.find((p) => p.id === line.productId);
+    if (!product) return line;
+    return {
+      ...line,
+      name: product.name,
+      unitPrice: Number(product.price) || line.unitPrice,
+    };
+  });
+}
+
+function normalizePurchases(purchases, products = store.products) {
+  if (!purchases || typeof purchases !== "object") return {};
+  return Object.fromEntries(
+    Object.entries(purchases).map(([userId, orders]) => [
+      userId,
+      Array.isArray(orders)
+        ? orders.map((order) => {
+            if (Array.isArray(order?.lineItems)) return { ...order, lineItems: toLineItems(order.lineItems, products) };
+            if (Array.isArray(order?.items)) {
+              const { items, ...rest } = order;
+              return { ...rest, lineItems: toLineItems(items, products) };
+            }
+            return { ...order, lineItems: [] };
+          })
+        : [],
+    ])
+  );
+}
+
+function isStorageQuotaError(err) {
+  return err?.name === "QuotaExceededError" || err?.code === 22 || err?.code === 1014;
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    return true;
+  } catch (err) {
+    if (isStorageQuotaError(err)) {
+      alert("Local storage is full. Reduce product image sizes/count or remove old records before saving again.");
+      return false;
+    }
+    throw err;
+  }
+}
 function refreshStore() { store = loadData(); }
 function getUserById(id) { return store.users.find((u) => u.id === id); }
 function getSessionUser() { return sessionStorage.getItem(SESSION_USER_KEY); }
@@ -342,7 +407,7 @@ function checkout(user) {
   const purchasedAt = new Date().toLocaleString();
   const address = parsed.address;
 
-  store.purchases[user.id].push({ orderId, items, total, purchasedAt, shippingAddress: address });
+  store.purchases[user.id].push({ orderId, lineItems: toLineItems(items), total, purchasedAt, shippingAddress: address });
   store.tracking[user.id].push({ orderId, status: "Order Placed", location: `${address.city}, ${address.state}`, updatedAt: purchasedAt });
   saveData();
   document.getElementById("shippingForm").reset();
@@ -357,7 +422,16 @@ function renderPurchaseRecords(user) {
   const box = document.getElementById("purchaseRecords");
   if (!box) return;
   const records = store.purchases[user.id] || [];
-  box.innerHTML = records.length ? records.slice().reverse().map((r) => `<div class="record"><strong>${r.orderId}</strong>${r.items.map((it) => `<div class="purchase-item"><img src="${getPrimaryProductImage(it)}" alt="${it.name}" /><span>${it.name}</span></div>`).join("")}<small>${r.purchasedAt}</small><div>Total: ${r.total} coins</div></div>`).join("") : '<p class="muted">No purchases yet.</p>';
+  box.innerHTML = records.length ? records.slice().reverse().map((r) => {
+    const orderItems = toLineItems(Array.isArray(r.lineItems) ? r.lineItems : (r.items || []));
+    const itemsHtml = orderItems.map((it) => {
+      const current = store.products.find((p) => p.id === it.productId);
+      const image = current ? getPrimaryProductImage(current) : fallbackImage;
+      const qtyText = it.quantity > 1 ? ` × ${it.quantity}` : "";
+      return `<div class="purchase-item"><img src="${image}" alt="${it.name}" /><span>${it.name}${qtyText}</span></div>`;
+    }).join("");
+    return `<div class="record"><strong>${r.orderId}</strong>${itemsHtml}<small>${r.purchasedAt}</small><div>Total: ${r.total} coins</div></div>`;
+  }).join("") : '<p class="muted">No purchases yet.</p>';
 }
 
 function renderTrackingRecords(user) {
@@ -528,6 +602,9 @@ function updateProduct(event) {
 
 function fileToDataUrl(file) {
   if (!file.type.startsWith("image/")) return Promise.reject(new Error("Please upload image only."));
+  if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+    return Promise.reject(new Error(`Each image must be <= ${Math.round(MAX_IMAGE_UPLOAD_BYTES / 1024)}KB.`));
+  }
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
