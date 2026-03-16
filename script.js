@@ -164,6 +164,48 @@ function unlockAdminGate(event) {
   sessionStorage.setItem(SESSION_ADMIN_GATE, "1");
   msg.textContent = "Gate unlocked. Now login as admin.";
   event.target.reset();
+  setAdminLoginState(true);
+}
+
+function setAdminLoginState(unlocked) {
+  const card = document.getElementById("adminLoginCard");
+  const gateStatus = document.getElementById("adminGateStatus");
+  const loginButton = document.querySelector('#loginForm button[type="submit"]');
+  if (card) card.classList.toggle("locked", !unlocked);
+  if (gateStatus) {
+    gateStatus.textContent = unlocked
+      ? "Gate unlocked. You can now sign in as admin."
+      : "Gate is locked. Submit the passkey first.";
+    gateStatus.classList.toggle("success", unlocked);
+  }
+  if (loginButton) loginButton.disabled = !unlocked;
+}
+
+function renderAdminLoginQuickActions() {
+  const copyBtn = document.getElementById("copyAdminLinkBtn");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", async () => {
+      const adminUrl = `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, "")}admin-login.html`;
+      try {
+        await navigator.clipboard.writeText(adminUrl);
+        copyBtn.textContent = "Admin URL copied";
+        setTimeout(() => {
+          copyBtn.textContent = "Copy Admin URL";
+        }, 1800);
+      } catch {
+        window.prompt("Copy admin URL", adminUrl);
+      }
+    });
+  }
+
+  const revealBtn = document.getElementById("revealDemoCredentialsBtn");
+  const creds = document.getElementById("demoCredentials");
+  if (revealBtn && creds) {
+    revealBtn.addEventListener("click", () => {
+      const open = creds.classList.toggle("visible");
+      revealBtn.textContent = open ? "Hide Demo Credentials" : "Show Demo Credentials";
+    });
+  }
 }
 
 function renderResellerNav() {
@@ -529,10 +571,18 @@ function init() {
   bindBrandHomeLink();
   bindLogout();
   if (page === "login") {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("admin") === "1") {
+      window.location.replace("admin-login.html");
+      return;
+    }
     document.getElementById("loginForm").addEventListener("submit", (e) => loginUser(e, "reseller"));
     return;
   }
   if (page === "admin-login") {
+    const unlocked = isAdminGateUnlocked();
+    setAdminLoginState(unlocked);
+    renderAdminLoginQuickActions();
     document.getElementById("adminGateForm").addEventListener("submit", unlockAdminGate);
     document.getElementById("loginForm").addEventListener("submit", (e) => loginUser(e, "admin"));
     return;
