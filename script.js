@@ -70,7 +70,6 @@ const defaultData = {
   carts: {},
   purchases: {},
   tracking: {},
-  shippingAddresses: {},
   nextProductId: 6,
 };
 
@@ -142,7 +141,6 @@ function migrateData(data) {
   if (!migrated.carts) migrated.carts = {};
   if (!migrated.purchases) migrated.purchases = {};
   if (!migrated.tracking) migrated.tracking = {};
-  if (!migrated.shippingAddresses) migrated.shippingAddresses = {};
 
   return migrated;
 }
@@ -327,7 +325,6 @@ function renderResellerData() {
   renderResellerNav();
   renderCatalog();
   renderCartSummary();
-  renderShippingAddress();
   renderPurchaseRecords();
   renderTrackingRecords();
 }
@@ -391,41 +388,27 @@ function clearCart() {
   renderCartSummary();
 }
 
-function renderShippingAddress() {
-  const address = store.shippingAddresses[currentUser.id];
-  const preview = document.getElementById("savedAddressPreview");
-  const form = document.getElementById("shippingForm");
-
-  if (!address) {
-    preview.textContent = "No shipping address saved yet.";
-    form.reset();
+function checkout() {
+  const cart = getUserCart(currentUser.id);
+  if (!cart.length) {
+    alert("Cart is empty.");
     return;
   }
 
-  preview.textContent = `${address.name}, ${address.line}, ${address.city}, ${address.state} - ${address.pincode} (${address.phone})`;
-  document.getElementById("shipName").value = address.name;
-  document.getElementById("shipPhone").value = address.phone;
-  document.getElementById("shipLine").value = address.line;
-  document.getElementById("shipCity").value = address.city;
-  document.getElementById("shipState").value = address.state;
-  document.getElementById("shipPincode").value = address.pincode;
-}
+  const name = prompt("Enter receiver full name:", "")?.trim() || "";
+  const phoneRaw = prompt("Enter 10-digit phone number:", "")?.trim() || "";
+  const line = prompt("Enter address line:", "")?.trim() || "";
+  const city = prompt("Enter city:", "")?.trim() || "";
+  const state = prompt("Enter state:", "")?.trim() || "";
+  const pincode = prompt("Enter 6-digit pincode:", "")?.trim() || "";
 
-function saveShippingAddress(event) {
-  event.preventDefault();
-  const name = document.getElementById("shipName").value.trim();
-  const phone = document.getElementById("shipPhone").value.trim();
-  const line = document.getElementById("shipLine").value.trim();
-  const city = document.getElementById("shipCity").value.trim();
-  const state = document.getElementById("shipState").value.trim();
-  const pincode = document.getElementById("shipPincode").value.trim();
-
-  if (!name || !phone || !line || !city || !state || !pincode) {
-    alert("Please fill complete shipping address.");
+  if (!name || !phoneRaw || !line || !city || !state || !pincode) {
+    alert("Checkout cancelled. Please provide complete shipping details.");
     return;
   }
 
-  if (!/^\d{10}$/.test(phone.replace(/\D/g, ""))) {
+  const phone = phoneRaw.replace(/\D/g, "");
+  if (!/^\d{10}$/.test(phone)) {
     alert("Phone number must be 10 digits.");
     return;
   }
@@ -435,31 +418,14 @@ function saveShippingAddress(event) {
     return;
   }
 
-  store.shippingAddresses[currentUser.id] = {
+  const address = {
     name,
-    phone: phone.replace(/\D/g, ""),
+    phone,
     line,
     city,
     state,
     pincode,
   };
-  saveData();
-  renderShippingAddress();
-  alert("Shipping address saved.");
-}
-
-function checkout() {
-  const cart = getUserCart(currentUser.id);
-  if (!cart.length) {
-    alert("Cart is empty.");
-    return;
-  }
-
-  const address = store.shippingAddresses[currentUser.id];
-  if (!address) {
-    alert("Please save shipping address before checkout.");
-    return;
-  }
 
   const items = cart.map((id) => store.products.find((p) => p.id === id)).filter(Boolean);
   const total = items.reduce((sum, item) => sum + item.price, 0);
@@ -576,7 +542,6 @@ function deleteResellerUser(userId) {
   delete store.carts[userId];
   delete store.purchases[userId];
   delete store.tracking[userId];
-  delete store.shippingAddresses[userId];
   saveData();
   renderAdminData();
 }
@@ -662,7 +627,6 @@ function bindEvents() {
   document.getElementById("clearCartBtn").addEventListener("click", clearCart);
   document.getElementById("changeAdminPasswordForm").addEventListener("submit", changeAdminPassword);
   document.getElementById("changeGatePasswordForm").addEventListener("submit", changeGatePasskey);
-  document.getElementById("shippingForm").addEventListener("submit", saveShippingAddress);
 
   window.addEventListener("storage", () => {
     if (currentUser && currentUser.role === "reseller") {
