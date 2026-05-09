@@ -26,7 +26,7 @@
       <form id="adminGateForm" class="grid-form">
         <label>
           Admin panel passkey
-          <input type="password" id="adminGatePassword" required placeholder="Enter gate passkey" />
+          <input type="password" id="adminGatePassword" autocomplete="off" required placeholder="Enter gate passkey" />
         </label>
         <button type="submit">Unlock Admin Access</button>
       </form>
@@ -39,11 +39,11 @@
       <form id="loginForm" class="grid-form">
         <label>
           Admin ID
-          <input type="text" id="userId" required placeholder="admin" />
+          <input type="text" id="userId" autocomplete="username" required placeholder="admin" />
         </label>
         <label>
           Password
-          <input type="password" id="password" required placeholder="Enter admin password" />
+          <input type="password" id="password" autocomplete="current-password" required placeholder="Enter admin password" />
         </label>
         <button type="submit">Enter Dashboard</button>
       </form>

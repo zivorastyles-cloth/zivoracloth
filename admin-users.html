@@ -29,8 +29,8 @@
       <article class="card">
         <h3>Create Reseller User</h3>
         <form id="createUserForm" class="stack">
-          <input type="text" id="newUserId" placeholder="User ID" required />
-          <input type="password" id="newUserPassword" placeholder="Password" required />
+          <input type="text" id="newUserId" autocomplete="username" minlength="3" maxlength="24" pattern="[A-Za-z0-9._-]{3,24}" placeholder="User ID" required />
+          <input type="password" id="newUserPassword" autocomplete="new-password" minlength="6" placeholder="Password" required />
           <button type="submit">Create User</button>
         </form>
       </article>
@@ -50,7 +50,7 @@
     </section>
 
     <section class="card">
-      <h3>Users (Username + Password)</h3>
+      <h3>Users & Wallet</h3><p class="muted small-text">Passwords are hidden after creation for safer administration.</p>
       <div id="usersTableWrap"></div>
     </section>
   </main>
