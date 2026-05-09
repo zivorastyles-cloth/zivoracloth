@@ -1,5 +1,5 @@
-const STORAGE_KEY = "zivora_store_data_v5";
-const LEGACY_STORAGE_KEYS = ["zivora_store_data_v4", "zivora_store_data_v3", "zivora_store_data_v2"];
+const STORAGE_KEY = "zivora_store_data_v6";
+const LEGACY_STORAGE_KEYS = ["zivora_store_data_v5", "zivora_store_data_v4", "zivora_store_data_v3", "zivora_store_data_v2"];
 const SESSION_USER_KEY = "zivora_current_user";
 const SESSION_ADMIN_GATE = "zivora_admin_gate_unlocked";
 
@@ -47,6 +47,38 @@ let catalogSearchTerm = "";
 let catalogSortMode = "featured";
 const page = document.body.dataset.page;
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function getCategoryLabel(category) {
+  return CATEGORY_LABELS[category] || "Uncategorised";
+}
+
+function formatCoins(value) {
+  return `${Number(value || 0).toLocaleString("en-IN")} coins`;
+}
+
+function isSafeImageSource(src) {
+  const value = String(src || "").trim();
+  return /^(https?:)?\/\//i.test(value) || /^data:image\//i.test(value);
+}
+
+function getSafeImageSource(src) {
+  const value = String(src || "").trim();
+  return isSafeImageSource(value) ? value : fallbackImage;
+}
+
+function getBadgeHtml(badge) {
+  const label = BADGE_LABELS[badge];
+  return label ? `<span class="product-badge">${escapeHtml(label)}</span>` : "";
+}
+
 function loadData() {
   const primaryRaw = localStorage.getItem(STORAGE_KEY);
   if (primaryRaw) {
@@ -91,11 +123,12 @@ function normalizeProductImages(product) {
     .map((img) => String(img || "").trim())
     .filter(Boolean)
     .slice(0, MAX_PRODUCT_IMAGES);
-  return cleaned.length ? cleaned : [fallbackImage];
+  while (cleaned.length && cleaned.length < MIN_PRODUCT_IMAGES) cleaned.push(cleaned[cleaned.length - 1]);
+  return cleaned.length ? cleaned.map(getSafeImageSource) : [fallbackImage];
 }
 
 function getPrimaryProductImage(product) {
-  return normalizeProductImages(product)[0] || fallbackImage;
+  return getSafeImageSource(normalizeProductImages(product)[0] || fallbackImage);
 }
 
 function parseImageUrlsInput(inputValue) {
@@ -316,7 +349,7 @@ function renderCatalog() {
 
   const filteredProducts = categoryProducts.filter((p) => {
     if (!catalogSearchTerm) return true;
-    const haystack = `${p.name} ${p.details} ${CATEGORY_LABELS[p.category] || p.category}`.toLowerCase();
+    const haystack = `${p.name} ${p.details} ${getCategoryLabel(p.category)} ${BADGE_LABELS[p.badge] || ""}`.toLowerCase();
     return haystack.includes(catalogSearchTerm);
   });
 
@@ -325,48 +358,127 @@ function renderCatalog() {
   if (catalogSortMode === "price-high") products.sort((a, b) => b.price - a.price);
   if (catalogSortMode === "name-az") products.sort((a, b) => a.name.localeCompare(b.name));
 
-  title.textContent = selectedMaterial === "all" ? "Home: All categories" : `Category page: ${CATEGORY_LABELS[selectedMaterial] || "Selected"}`;
+  title.textContent = selectedMaterial === "all" ? "Home: All categories" : `Category page: ${getCategoryLabel(selectedMaterial)}`;
   if (meta) meta.textContent = `Showing ${products.length} of ${categoryProducts.length} products`;
 
+  catalog.innerHTML = "";
   if (!products.length) {
-    catalog.innerHTML = '<div class="product-item muted">No products match this filter. Try another search or category.</div>';
+    const empty = document.createElement("div");
+    empty.className = "product-item muted";
+    empty.textContent = "No products match this filter. Try another search or category.";
+    catalog.appendChild(empty);
     return;
   }
 
   const userId = getSessionUser();
-  catalog.innerHTML = "";
   products.forEach((p) => {
-    const item = document.createElement("div");
+    const item = document.createElement("article");
     item.className = "product-item";
-    item.innerHTML = `<img src="${getPrimaryProductImage(p)}" alt="${p.name}" loading="lazy" /><strong>${p.name}</strong><small>${p.details}</small><p>${p.price} coins • ${CATEGORY_LABELS[p.category] || p.category}</p><button data-product-id="${p.id}">Add to Cart</button>`;
-    item.querySelector("button").addEventListener("click", () => {
+
+    const imageWrap = document.createElement("div");
+    imageWrap.className = "product-image-wrap";
+    const image = document.createElement("img");
+    image.src = getPrimaryProductImage(p);
+    image.alt = p.name;
+    image.loading = "lazy";
+    imageWrap.appendChild(image);
+    if (p.badge && BADGE_LABELS[p.badge]) {
+      const badge = document.createElement("span");
+      badge.className = "product-badge";
+      badge.textContent = BADGE_LABELS[p.badge];
+      imageWrap.appendChild(badge);
+    }
+
+    const name = document.createElement("strong");
+    name.textContent = p.name;
+    const details = document.createElement("small");
+    details.textContent = p.details;
+    const price = document.createElement("p");
+    price.className = "product-price";
+    price.textContent = `${formatCoins(p.price)} • ${getCategoryLabel(p.category)}`;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "Add to Cart";
+    button.addEventListener("click", () => {
       getUserCart(userId).push(p.id);
       saveData();
       renderNavCartCount(userId);
       alert(`${p.name} added to cart.`);
     });
+
+    item.append(imageWrap, name, details, price, button);
     catalog.appendChild(item);
   });
 }
 
 function renderWallet(user) {
   const wallet = document.getElementById("walletBalance");
-  if (wallet) wallet.textContent = `${user.wallet} 🪙`;
+  if (wallet) wallet.textContent = `${Number(user.wallet || 0).toLocaleString("en-IN")} 🪙`;
 }
 
 function cartItemsWithProducts(userId) {
   return getUserCart(userId).map((id) => store.products.find((p) => p.id === id)).filter(Boolean);
 }
 
+function getGroupedCartItems(userId) {
+  const grouped = new Map();
+  cartItemsWithProducts(userId).forEach((product) => {
+    if (!grouped.has(product.id)) grouped.set(product.id, { product, quantity: 0 });
+    grouped.get(product.id).quantity += 1;
+  });
+  return Array.from(grouped.values());
+}
+
+function setProductQuantity(userId, productId, quantity) {
+  const requestedQuantity = Math.max(0, Number(quantity) || 0);
+  const otherItems = getUserCart(userId).filter((id) => id !== productId);
+  store.carts[userId] = [...otherItems, ...Array(requestedQuantity).fill(productId)];
+  saveData();
+  renderCart(getUserById(userId));
+  renderNavCartCount(userId);
+}
+
 function renderCart(user) {
-  const items = cartItemsWithProducts(user.id);
-  const total = items.reduce((sum, item) => sum + item.price, 0);
+  const groupedItems = getGroupedCartItems(user.id);
+  const itemCount = groupedItems.reduce((sum, item) => sum + item.quantity, 0);
+  const total = groupedItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
   const summary = document.getElementById("cartSummary");
-  if (summary) summary.textContent = `${items.length} item(s) • ${total} coins`;
+  if (summary) summary.textContent = `${itemCount} item(s) • ${formatCoins(total)}`;
+  const checkoutButton = document.getElementById("checkoutBtn");
+  if (checkoutButton) checkoutButton.disabled = groupedItems.length === 0;
   const cartItems = document.getElementById("cartItems");
-  if (cartItems) {
-    cartItems.innerHTML = items.length ? items.map((it) => `<div class="record"><strong>${it.name}</strong><div>${it.price} coins</div></div>`).join("") : '<p class="muted">Cart is empty.</p>';
+  if (!cartItems) return;
+
+  cartItems.innerHTML = "";
+  if (!groupedItems.length) {
+    cartItems.innerHTML = '<p class="muted">Cart is empty.</p>';
+    return;
   }
+
+  groupedItems.forEach(({ product, quantity }) => {
+    const record = document.createElement("div");
+    record.className = "record cart-record";
+    record.innerHTML = `
+      <img src="${escapeHtml(getPrimaryProductImage(product))}" alt="${escapeHtml(product.name)}" />
+      <div>
+        <strong>${escapeHtml(product.name)}</strong>
+        <div class="muted small-text">${escapeHtml(getCategoryLabel(product.category))}</div>
+        <div>${escapeHtml(formatCoins(product.price))} each • ${escapeHtml(formatCoins(product.price * quantity))}</div>
+      </div>
+      <label class="quantity-control">Qty
+        <input type="number" min="1" max="99" value="${quantity}" data-cart-qty="${product.id}" />
+      </label>
+      <button type="button" class="danger small" data-remove-cart="${product.id}">Remove</button>
+    `;
+    cartItems.appendChild(record);
+  });
+
+  cartItems.querySelectorAll("[data-cart-qty]").forEach((input) => {
+    input.addEventListener("change", () => setProductQuantity(user.id, Number(input.getAttribute("data-cart-qty")), Number(input.value)));
+  });
+  cartItems.querySelectorAll("[data-remove-cart]").forEach((button) => {
+    button.addEventListener("click", () => setProductQuantity(user.id, Number(button.getAttribute("data-remove-cart")), 0));
+  });
 }
 
 function getShippingAddressFromForm() {
@@ -428,9 +540,12 @@ function renderPurchaseRecords(user) {
       const current = store.products.find((p) => p.id === it.productId);
       const image = current ? getPrimaryProductImage(current) : fallbackImage;
       const qtyText = it.quantity > 1 ? ` × ${it.quantity}` : "";
-      return `<div class="purchase-item"><img src="${image}" alt="${it.name}" /><span>${it.name}${qtyText}</span></div>`;
+      return `<div class="purchase-item"><img src="${escapeHtml(image)}" alt="${escapeHtml(it.name)}" /><span>${escapeHtml(it.name)}${escapeHtml(qtyText)}</span></div>`;
     }).join("");
-    return `<div class="record"><strong>${r.orderId}</strong>${itemsHtml}<small>${r.purchasedAt}</small><div>Total: ${r.total} coins</div></div>`;
+    const address = r.shippingAddress
+      ? `<div class="muted small-text">Ship to: ${escapeHtml(r.shippingAddress.name)}, ${escapeHtml(r.shippingAddress.city)}, ${escapeHtml(r.shippingAddress.state)} - ${escapeHtml(r.shippingAddress.pincode)}</div>`
+      : "";
+    return `<div class="record"><strong>${escapeHtml(r.orderId)}</strong>${itemsHtml}<small>${escapeHtml(r.purchasedAt)}</small><div>Total: ${escapeHtml(formatCoins(r.total))}</div>${address}</div>`;
   }).join("") : '<p class="muted">No purchases yet.</p>';
 }
 
@@ -438,7 +553,7 @@ function renderTrackingRecords(user) {
   const box = document.getElementById("trackingRecords");
   if (!box) return;
   const records = store.tracking[user.id] || [];
-  box.innerHTML = records.length ? records.slice().reverse().map((t) => `<div class="record"><strong>${t.orderId}</strong><div>Status: ${t.status}</div><div>Location: ${t.location}</div><small>Updated: ${t.updatedAt}</small></div>`).join("") : '<p class="muted">No tracking updates yet.</p>';
+  box.innerHTML = records.length ? records.slice().reverse().map((t) => `<div class="record"><strong>${escapeHtml(t.orderId)}</strong><div>Status: ${escapeHtml(t.status)}</div><div>Location: ${escapeHtml(t.location)}</div><small>Updated: ${escapeHtml(t.updatedAt)}</small></div>`).join("") : '<p class="muted">No tracking updates yet.</p>';
 }
 
 function renderUsersTable() {
@@ -446,12 +561,17 @@ function renderUsersTable() {
   const walletUser = document.getElementById("walletUser");
   if (walletUser) {
     walletUser.innerHTML = '<option value="">Select reseller</option>';
-    resellerUsers.forEach((u) => walletUser.insertAdjacentHTML("beforeend", `<option value="${u.id}">${u.id} (wallet: ${u.wallet} coins)</option>`));
+    resellerUsers.forEach((u) => {
+      const option = document.createElement("option");
+      option.value = u.id;
+      option.textContent = `${u.id} (wallet: ${formatCoins(u.wallet)})`;
+      walletUser.appendChild(option);
+    });
   }
-  const rows = store.users.map((u) => `<tr><td>${u.id}</td><td>${u.password}</td><td>${u.role}</td><td>${u.wallet} coins</td><td>${u.role === "reseller" ? `<button class="danger small" data-delete-user="${u.id}">Delete</button>` : "-"}</td></tr>`).join("");
+  const rows = store.users.map((u) => `<tr><td>${escapeHtml(u.id)}</td><td aria-label="Password hidden">••••••</td><td>${escapeHtml(u.role)}</td><td>${escapeHtml(formatCoins(u.wallet))}</td><td>${u.role === "reseller" ? `<button class="danger small" data-delete-user="${escapeHtml(u.id)}">Delete</button>` : "-"}</td></tr>`).join("");
   const wrap = document.getElementById("usersTableWrap");
   if (!wrap) return;
-  wrap.innerHTML = `<table class="table"><thead><tr><th>User ID</th><th>Password</th><th>Role</th><th>Wallet</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table>`;
+  wrap.innerHTML = `<div class="table-scroll"><table class="table"><thead><tr><th>User ID</th><th>Password</th><th>Role</th><th>Wallet</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   wrap.querySelectorAll("[data-delete-user]").forEach((b) => b.addEventListener("click", () => deleteResellerUser(b.getAttribute("data-delete-user"))));
 }
 
@@ -459,8 +579,8 @@ function renderProductsAdminTable() {
   const wrap = document.getElementById("productsTableWrap");
   if (!wrap) return;
   if (!store.products.length) return (wrap.innerHTML = '<p class="muted">No products available.</p>');
-  const rows = store.products.map((p) => `<tr><td>${p.id}</td><td>${p.name}</td><td>${CATEGORY_LABELS[p.category] || p.category}</td><td>${p.price}</td><td>${p.details}</td><td>${normalizeProductImages(p).length}</td><td>${BADGE_LABELS[p.badge] || "-"}</td><td><div class="row"><button class="small" data-edit-product="${p.id}">Edit</button><button class="danger small" data-delete-product="${p.id}">Delete</button></div></td></tr>`).join("");
-  wrap.innerHTML = `<table class="table"><thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price (coins)</th><th>Details</th><th>Images</th><th>Badge</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table>`;
+  const rows = store.products.map((p) => `<tr><td>${p.id}</td><td>${escapeHtml(p.name)}</td><td>${escapeHtml(getCategoryLabel(p.category))}</td><td>${escapeHtml(formatCoins(p.price))}</td><td>${escapeHtml(p.details)}</td><td>${normalizeProductImages(p).length}</td><td>${BADGE_LABELS[p.badge] ? getBadgeHtml(p.badge) : "-"}</td><td><div class="row"><button class="small" data-edit-product="${p.id}">Edit</button><button class="danger small" data-delete-product="${p.id}">Delete</button></div></td></tr>`).join("");
+  wrap.innerHTML = `<div class="table-scroll"><table class="table"><thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Details</th><th>Images</th><th>Badge</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   wrap.querySelectorAll("[data-edit-product]").forEach((b) => b.addEventListener("click", () => openEditProductModal(Number(b.getAttribute("data-edit-product")))));
   wrap.querySelectorAll("[data-delete-product]").forEach((b) => b.addEventListener("click", () => deleteProduct(Number(b.getAttribute("data-delete-product")))));
 }
@@ -471,15 +591,22 @@ function renderOrdersAdminTable() {
   const rows = [];
   Object.entries(store.purchases).forEach(([userId, orders]) => orders.forEach((order) => rows.push({ userId, order, track: (store.tracking[userId] || []).find((t) => t.orderId === order.orderId) })));
   if (!rows.length) return (wrap.innerHTML = '<p class="muted">No booked orders found.</p>');
-  wrap.innerHTML = `<table class="table"><thead><tr><th>Order ID</th><th>Reseller</th><th>Total</th><th>Tracking</th><th>Location</th><th>Actions</th></tr></thead><tbody>${rows.slice().reverse().map(({userId,order,track})=>`<tr><td>${order.orderId}</td><td>${userId}</td><td>${order.total} coins</td><td><select data-track-status="${order.orderId}" data-track-user="${userId}">${["Order Placed","Packed","Shipped","Out for Delivery","Delivered","Cancelled"].map((s)=>`<option value="${s}" ${s === (track?.status || "Order Placed") ? "selected" : ""}>${s}</option>`).join("")}</select></td><td><input type="text" value="${track?.location || "-"}" data-track-location="${order.orderId}" data-track-user="${userId}" /></td><td><div class="row"><button class="small" data-update-order="${order.orderId}" data-order-user="${userId}">Update</button><button class="danger small" data-cancel-order="${order.orderId}" data-order-user="${userId}">Cancel</button></div></td></tr>`).join("")}</tbody></table>`;
-  wrap.querySelectorAll("[data-update-order]").forEach((b) => b.addEventListener("click", () => {
-    const orderId = b.getAttribute("data-update-order");
-    const userId = b.getAttribute("data-order-user");
-    const status = wrap.querySelector(`[data-track-status="${orderId}"][data-track-user="${userId}"]`).value;
-    const location = wrap.querySelector(`[data-track-location="${orderId}"][data-track-user="${userId}"]`).value.trim();
-    updateOrderTracking(userId, orderId, status, location);
+  wrap.innerHTML = `<div class="table-scroll"><table class="table"><thead><tr><th>Order ID</th><th>Reseller</th><th>Total</th><th>Items</th><th>Tracking</th><th>Location</th><th>Actions</th></tr></thead><tbody>${rows.slice().reverse().map(({userId,order,track}, index)=>{
+    const itemCount = toLineItems(order.lineItems || order.items || []).reduce((sum, item) => sum + item.quantity, 0);
+    return `<tr><td>${escapeHtml(order.orderId)}</td><td>${escapeHtml(userId)}</td><td>${escapeHtml(formatCoins(order.total))}</td><td>${itemCount}</td><td><select data-order-index="${index}" data-track-field="status">${["Order Placed","Packed","Shipped","Out for Delivery","Delivered","Cancelled"].map((status)=>`<option value="${escapeHtml(status)}" ${status === (track?.status || "Order Placed") ? "selected" : ""}>${escapeHtml(status)}</option>`).join("")}</select></td><td><input type="text" value="${escapeHtml(track?.location || "-")}" data-order-index="${index}" data-track-field="location" /></td><td><div class="row"><button class="small" data-update-order-index="${index}">Update</button><button class="danger small" data-cancel-order-index="${index}">Cancel</button></div></td></tr>`;
+  }).join("")}</tbody></table></div>`;
+  const orderedRows = rows.slice().reverse();
+  wrap.querySelectorAll("[data-update-order-index]").forEach((b) => b.addEventListener("click", () => {
+    const rowIndex = Number(b.getAttribute("data-update-order-index"));
+    const row = orderedRows[rowIndex];
+    const status = wrap.querySelector(`[data-order-index="${rowIndex}"][data-track-field="status"]`).value;
+    const location = wrap.querySelector(`[data-order-index="${rowIndex}"][data-track-field="location"]`).value.trim();
+    updateOrderTracking(row.userId, row.order.orderId, status, location);
   }));
-  wrap.querySelectorAll("[data-cancel-order]").forEach((b) => b.addEventListener("click", () => cancelOrder(b.getAttribute("data-order-user"), b.getAttribute("data-cancel-order"))));
+  wrap.querySelectorAll("[data-cancel-order-index]").forEach((b) => b.addEventListener("click", () => {
+    const row = orderedRows[Number(b.getAttribute("data-cancel-order-index"))];
+    cancelOrder(row.userId, row.order.orderId);
+  }));
 }
 
 function createUser(event) {
@@ -487,6 +614,8 @@ function createUser(event) {
   const id = document.getElementById("newUserId").value.trim();
   const password = document.getElementById("newUserPassword").value;
   if (!id || !password) return;
+  if (!/^[a-z0-9._-]{3,24}$/i.test(id)) return alert("User ID must be 3-24 letters, numbers, dots, underscores or hyphens.");
+  if (password.length < 6) return alert("Password must be at least 6 characters.");
   if (getUserById(id)) return alert("User ID already exists.");
   store.users.push({ id, password, role: "reseller", wallet: 0 });
   saveData();
@@ -528,10 +657,14 @@ async function createProduct(event) {
   const imageUrls = parseImageUrlsInput(document.getElementById("productImage").value);
   const fileInput = document.getElementById("productImageFile");
   const selectedFiles = Array.from(fileInput.files || []);
-  const fileImages = await Promise.all(selectedFiles.slice(0, MAX_PRODUCT_IMAGES).map((file) => fileToDataUrl(file)));
-  const images = [...fileImages, ...imageUrls].slice(0, MAX_PRODUCT_IMAGES);
+  if (selectedFiles.length + imageUrls.length > MAX_PRODUCT_IMAGES) {
+    alert(`Please provide no more than ${MAX_PRODUCT_IMAGES} product images.`);
+    return;
+  }
+  const fileImages = await Promise.all(selectedFiles.map((file) => fileToDataUrl(file)));
+  const images = [...fileImages, ...imageUrls];
 
-  if (!name || !category || !price || !details) return;
+  if (!name || !category || !Number.isFinite(price) || price < 1 || !details) return alert("Please enter valid product details and price.");
   if (images.length < MIN_PRODUCT_IMAGES || images.length > MAX_PRODUCT_IMAGES) {
     alert(`Please provide ${MIN_PRODUCT_IMAGES}-${MAX_PRODUCT_IMAGES} product images.`);
     return;
@@ -577,8 +710,8 @@ function updateProduct(event) {
   const details = document.getElementById("editProductDetails").value.trim();
   const images = parseImageUrlsInput(document.getElementById("editProductImage").value).slice(0, MAX_PRODUCT_IMAGES);
 
-  if (!name || !category || !price || !details) {
-    alert("Please fill all required fields.");
+  if (!name || !category || !Number.isFinite(price) || price < 1 || !details) {
+    alert("Please fill all required fields with a valid positive price.");
     return;
   }
 

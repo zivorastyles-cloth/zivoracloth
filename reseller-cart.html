@@ -39,12 +39,12 @@
       <h2>Shipping Address</h2>
       <p class="muted">Address is captured for this checkout.</p>
       <form id="shippingForm" class="grid-form">
-        <input type="text" id="shipName" required placeholder="Full name" />
-        <input type="tel" id="shipPhone" required placeholder="Phone number" />
-        <input type="text" id="shipLine" required placeholder="Address line" />
-        <input type="text" id="shipCity" required placeholder="City" />
-        <input type="text" id="shipState" required placeholder="State" />
-        <input type="text" id="shipPincode" required placeholder="Pincode" />
+        <input type="text" id="shipName" autocomplete="name" required placeholder="Full name" />
+        <input type="tel" id="shipPhone" autocomplete="tel" inputmode="numeric" required placeholder="Phone number" />
+        <input type="text" id="shipLine" autocomplete="address-line1" required placeholder="Address line" />
+        <input type="text" id="shipCity" autocomplete="address-level2" required placeholder="City" />
+        <input type="text" id="shipState" autocomplete="address-level1" required placeholder="State" />
+        <input type="text" id="shipPincode" autocomplete="postal-code" inputmode="numeric" required placeholder="Pincode" />
         <button type="submit">Validate Address</button>
       </form>
       <p id="savedAddressPreview" class="muted">Shipping details will be collected during checkout for each order.</p>
